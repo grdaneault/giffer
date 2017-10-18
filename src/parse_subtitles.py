@@ -1,5 +1,8 @@
 import re
 import requests
+from tqdm import tqdm
+
+from movie_paths import movies
 
 timestamp_pattern = re.compile("[0-9]*:[0-9]*:[0-9]*,[0-9]*")
 id_pattern = re.compile("[0-9]+")
@@ -40,7 +43,7 @@ def parse_subs(movie_path, sub_path):
 
 
 def load_subs_to_es(subs):
-    for sub in subs:
+    for sub in tqdm(subs):
         resp = requests.post('http://localhost:9200/subtitles/sub', json=sub.__dict__)
         if resp.status_code >= 400:
             print(resp.text)
@@ -48,14 +51,8 @@ def load_subs_to_es(subs):
 
 
 if __name__ == '__main__':
-    mkv_file = "movie.mkv"
-    sub_file = "movie.srt"
-
-    subs = parse_subs(mkv_file, sub_file)
-
-
-    for sub in subs:
-        resp = requests.post('http://localhost:9200/subtitles/sub', json=sub.__dict__)
-        print(resp.text)
-        resp.raise_for_status()
-
+    for movie in movies:
+        print(movie)
+        subs = parse_subs(movie, movie.replace(".mkv", ".srt"))
+        load_subs_to_es(subs)
+        movies[movie] = {sub.id: sub for sub in subs}
