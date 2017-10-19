@@ -27,7 +27,13 @@ def make_a_gif(mkv_file, sub_file, output_file, start, end):
     final = final.resize(width=400)
     # final.to_videofile("final.mp4")
 
+
+    # if not output_file.endswith(".webm"):
+    #     output_file += ".webm"
+
     if not output_file.endswith(".gif"):
         output_file += ".gif"
+
+    # final.write_videofile("output/" + output_file, fps=2, audio=False)
 
     final.write_gif("output/" + output_file, fps=15)
