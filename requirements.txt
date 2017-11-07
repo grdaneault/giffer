@@ -4,3 +4,5 @@ SQLAlchemy
 requests
 moviepy
 tqdm
+
+git+https://github.com/agonzalezro/python-opensubtitles#egg=python-opensubtitles

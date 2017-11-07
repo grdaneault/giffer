@@ -18,7 +18,7 @@ class Movie(Base):
 
     subtitles = relationship("Subtitle", order_by=Subtitle.sub_id, back_populates="movie")
 
-    def __init__(self, name, movie_path, subs_path):
+    def __init__(self, name, movie_path, subs_path=None):
         self.name = name
 
         if not os.path.isfile(movie_path):
@@ -30,6 +30,9 @@ class Movie(Base):
         self.subs = self.load_subs(subs_path)
 
     def load_subs(self, sub_path):
+        if not sub_path:
+            return []
+
         subs = []
         with open(sub_path, encoding='utf-8') as sub_file:
             sub = None
@@ -40,7 +43,6 @@ class Movie(Base):
                     start, end = TIMESTAMP_PATTERN.findall(line)
                     sub.start = datetime.strptime(start, "%H:%M:%S,%f").time()
                     sub.end = datetime.strptime(end, "%H:%M:%S,%f").time()
-
 
                 elif not line.strip():
                     sub.text = sub.text.strip()
@@ -63,4 +65,3 @@ class Movie(Base):
             d["subtitles"] = [sub.to_dict(include_movie=False) for sub in self.subs]
 
         return d
-
