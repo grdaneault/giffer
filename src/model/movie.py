@@ -27,14 +27,18 @@ class Movie(Base):
         self.movie_path = movie_path
         self.subs_path = subs_path
 
-        self.subs = self.load_subs(subs_path)
+        if subs_path and os.path.exists(subs_path):
+            self.load_subs()
+        else:
+            self.subs = None
 
-    def load_subs(self, sub_path):
-        if not sub_path:
-            return []
+    def load_subs(self):
+        # noop if there's no subs file or subs are already loaded
+        if not self.subs_path or self.subs:
+            return
 
         subs = []
-        with open(sub_path, encoding='utf-8') as sub_file:
+        with open(self.subs_path, encoding='utf-8') as sub_file:
             sub = None
             for line in sub_file:
                 if sub is None:
@@ -51,7 +55,7 @@ class Movie(Base):
                 else:
                     sub.text += line
 
-        return subs
+        self.subs = subs
 
     def to_dict(self, include_subs=False):
         d = {
