@@ -30,11 +30,11 @@ class Movie(Base):
         if subs_path and os.path.exists(subs_path):
             self.load_subs()
         else:
-            self.subs = None
+            self.subtitles = []
 
     def load_subs(self):
         # noop if there's no subs file or subs are already loaded
-        if not self.subs_path or self.subs:
+        if not self.subs_path or self.subtitles:
             return
 
         subs = []
@@ -55,7 +55,7 @@ class Movie(Base):
                 else:
                     sub.text += line
 
-        self.subs = subs
+        self.subtitles = subs
 
     def to_dict(self, include_subs=False):
         d = {
@@ -66,6 +66,6 @@ class Movie(Base):
         }
 
         if include_subs:
-            d["subtitles"] = [sub.to_dict(include_movie=False) for sub in self.subs]
+            d["subtitles"] = [sub.to_dict(include_movie=False) for sub in self.subtitles]
 
         return d

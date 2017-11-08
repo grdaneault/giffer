@@ -15,12 +15,11 @@ class SubsLocatorService:
         if not password or not password.strip():
             raise ValueError("Missing password")
 
-        # Allow overriding the user agent since the test UA has changed
-        if user_agent:
-            Settings.USER_AGENT = user_agent
+        self.os_username = username
+        self.os_password = password
+        self.os = OpenSubtitles(user_agent=user_agent)
+        self.os_logged_in = False
 
-        self.os = OpenSubtitles()
-        self.os.login(username, password)
         self.log = getLogger(self.__class__.__name__)
 
     def _extract_subs_from_mkv(self, movie_path):
@@ -32,11 +31,15 @@ class SubsLocatorService:
             return False
 
     def _download_subs_for_file(self, movie_path, sub_file):
+        if not self.os_logged_in:
+            self.os.login(self.os_username, self.os_password)
+            self.os_logged_in = True
+
         movie_file = File(movie_path)
         search_def = {
             'sublanguageid': 'eng',
             'moviehash': movie_file.get_hash(),
-            'moviebytesize': int(movie_file.size)
+            'moviebytesize': movie_file.size
         }
         subs = self.os.search_subtitles([search_def])
 
@@ -60,17 +63,24 @@ class SubsLocatorService:
 
         # Preserve sanity... ensure that all subs files are named the same way
         expected_sub_file = os.path.splitext(movie.movie_path)[0] + ".srt"
-        if expected_sub_file != movie.subs_path and os.path.exists(movie.subs_path) and not os.path.exists(expected_sub_file):
+        if movie.subs_path and expected_sub_file != movie.subs_path and os.path.exists(movie.subs_path) and not os.path.exists(expected_sub_file):
             shutil.copy(movie.subs_path, expected_sub_file)
+            movie.subs_path = expected_sub_file
             return True
 
         # Do we already have subs in the expected place?
         if os.path.exists(expected_sub_file) and os.path.getsize(expected_sub_file) > 0:
+            movie.subs_path = expected_sub_file
             return True
 
         # Is this an mkv with subs baked in?
         if movie.movie_path.endswith(".mkv") and self._extract_subs_from_mkv(movie.movie_path):
+            movie.subs_path = expected_sub_file
             return True
 
         # Does this movie have "sync" subs available (matching the hash)
-        return self._download_subs_for_file(movie.movie_path, expected_sub_file)
+        if self._download_subs_for_file(movie.movie_path, expected_sub_file):
+            movie.subs_path = expected_sub_file
+            return True
+
+        return False

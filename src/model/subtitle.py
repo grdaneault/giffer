@@ -34,4 +34,7 @@ class Subtitle(Base):
 
         return d
 
+    def __str__(self):
+        return "%s -> %s: %s" % (self.start, self.end, self.text.replace('\n', ' \\n '))
 
+    __repr__ = __str__
