@@ -51,7 +51,8 @@ services:
     container_name: rabbitmq
     environment:
       - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=1024MiB
-
+    ports:
+      - 5672:5672
 
 
 volumes:

@@ -1,7 +1,7 @@
 import os
 from apps import db
 from apps import flask_app as app
-from flask import request, jsonify
+from flask import request, jsonify, url_for
 from model import Movie
 from service import SubsLocatorService, SubSearch
 
@@ -71,9 +71,37 @@ def get_gif_range(movie_id, start_id, end_id):
     if end_id - start_id > 10:
         return "too much!"
 
-    movie = db.session.query(Movie).get(movie_id)
-    start = sub_search.get_sub_by_id(movie_id, start_id)
-    end = sub_search.get_sub_by_id(movie_id, end_id)
-    return jsonify(make_gif.delay(movie, start, end))
+    task = make_gif.delay(movie_id, start_id, end_id)
+    return jsonify({}), 202, {'Location': url_for('gif_render_status', task_id=task.id)}
 
+
+@app.route('/gif/status/<int:task_id>')
+def gif_render_status(task_id):
+    task = make_gif.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        # job did not start yet
+        response = {
+            'state': task.state,
+            'current': 0,
+            'total': 1,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'current': task.info.get('current', 0),
+            'total': task.info.get('total', 1),
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'current': 1,
+            'total': 1,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
 

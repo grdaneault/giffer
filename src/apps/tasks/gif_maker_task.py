@@ -8,6 +8,8 @@ from moviepy.tools import extensions_dict
 
 from service import SubsLocatorService, SubSearch
 
+from model import Movie
+
 extensions_dict["mkv"] = {'type': 'video', 'codec': ['libx264', 'libmpeg4', 'aac']}
 
 subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=os.environ.get('OS_PASS'))
@@ -15,16 +17,20 @@ sub_search = SubSearch(db=db)
 
 
 @app.task()
-def make_gif(movie, start, end, width=400):
+def make_gif(movie_id, start_id, end_id, width=400):
     """
     Makes a gif including the selected subtitles
     
-    :param movie: The movie from which the gif will be created 
-    :param start: Starting subtitle
-    :param end: Ending subtitle
-    :type start: Subtitle
-    :type end: Subtitle
+    :param movie_id: Movie file ID 
+    :param start: Starting subtitle ID
+    :param end: Ending subtitle ID
+    :type start: int
+    :type end: int
     """
+
+    movie = db.session.query(Movie).get(movie_id)
+    start = sub_search.get_sub_by_id(movie_id, start_id)
+    end = sub_search.get_sub_by_id(movie_id, end_id)
 
     filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
     filename = os.path.join(app.conf['GIF_OUTPUT_PATH'], filename)
