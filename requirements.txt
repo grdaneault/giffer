@@ -1,3 +1,4 @@
+celery
 elasticsearch
 elasticsearch_dsl
 flask

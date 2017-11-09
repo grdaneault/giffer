@@ -1,4 +1,5 @@
 import os
+from celery import Celery
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
@@ -6,7 +7,7 @@ from model import Base, Movie, Subtitle
 from service import SubsLocatorService, SubSearch
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://giffer:password@localhost:5432'
 
 db = SQLAlchemy(app)
 db.Model = Base

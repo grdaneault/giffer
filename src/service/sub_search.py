@@ -7,6 +7,7 @@ from model import Subtitle, Movie
 INDEX_SUBTITLES = "subtitles"
 INDEX_MOVIES = "movies"
 
+
 class SubSearch:
     def __init__(self, es_host='localhost:9200', db=None):
         self.es = Elasticsearch(hosts=[es_host])
