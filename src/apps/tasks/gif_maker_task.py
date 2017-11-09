@@ -22,10 +22,8 @@ def make_gif(movie_id, start_id, end_id, width=400):
     Makes a gif including the selected subtitles
     
     :param movie_id: Movie file ID 
-    :param start: Starting subtitle ID
-    :param end: Ending subtitle ID
-    :type start: int
-    :type end: int
+    :param start_id: Starting subtitle ID
+    :param end_id: Ending subtitle ID
     """
 
     movie = db.session.query(Movie).get(movie_id)
@@ -33,7 +31,7 @@ def make_gif(movie_id, start_id, end_id, width=400):
     end = sub_search.get_sub_by_id(movie_id, end_id)
 
     filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
-    filename = os.path.join(app.conf['GIF_OUTPUT_PATH'], filename)
+    filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
     # we already have this gif - don't render again
     if os.path.exists(filename):
@@ -49,8 +47,8 @@ def make_gif(movie_id, start_id, end_id, width=400):
 
     subs = SubtitlesClip(movie.subs_path, make_textclip=subtitler)
 
-    start_time = start.start.replace(',', '.')
-    end_time = end.end.replace(',', '.')
+    start_time = start.start.strftime("%H:%M:%S.%f")
+    end_time = end.end.strftime("%H:%M:%S.%f")
     cropped_vid = clip.subclip(t_start=start_time, t_end=end_time)
     cropped_sub = subs.subclip(t_start=start_time, t_end=end_time)
     cropped_sub = cropped_sub.set_position(("center", "bottom"))

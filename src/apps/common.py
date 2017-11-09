@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from model import Base
 
-celery_app = Celery('apps.tasks', broker='pyamqp://guest@localhost//')
+celery_app = Celery('apps.tasks', backend='redis://localhost', broker='pyamqp://guest@localhost//')
 celery_app.config_from_object('apps.Config')
 
 flask_app = Flask('giffer')

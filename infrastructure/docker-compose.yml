@@ -53,6 +53,11 @@ services:
       - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=1024MiB
     ports:
       - 5672:5672
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - 6379:6379
 
 
 volumes:

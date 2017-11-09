@@ -75,7 +75,7 @@ def get_gif_range(movie_id, start_id, end_id):
     return jsonify({}), 202, {'Location': url_for('gif_render_status', task_id=task.id)}
 
 
-@app.route('/gif/status/<int:task_id>')
+@app.route('/gif/status/<task_id>')
 def gif_render_status(task_id):
     task = make_gif.AsyncResult(task_id)
     if task.state == 'PENDING':
