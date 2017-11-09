@@ -82,7 +82,7 @@ class SubsLocatorService:
         existing_subs = self._find_existing_subs(movie)
         if existing_subs:
             if existing_subs != expected_sub_file:
-                shutil.copy(movie.subs_path, expected_sub_file)
+                shutil.copy(existing_subs, expected_sub_file)
             movie.subs_path = expected_sub_file
             return True
 

@@ -29,6 +29,11 @@ def add_movie():
         return resp
 
 
+@app.route("/movie")
+def list_movies():
+    return jsonify([movie.to_dict(include_subs=False) for movie in db.session.query(Movie).all()])
+
+
 @app.route("/movie/<int:movie_id>")
 def get_movie(movie_id):
     return jsonify(db.session.query(Movie).get(movie_id).to_dict())
@@ -91,4 +96,4 @@ def gif_render_status(task_id):
 
 @app.route('/gif/<gif_file>')
 def gif(gif_file):
-    return send_from_directory(app.config['GIT_FILE_DIR'], gif_file)
+    return send_from_directory(app.config['GIF_OUTPUT_DIR'], gif_file)
