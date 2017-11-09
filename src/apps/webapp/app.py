@@ -67,9 +67,7 @@ def get_sub_range(movie_id, start_id, end_id):
 
 @app.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
 def get_gif(movie_id, sub_id):
-    movie = db.session.query(Movie).get(movie_id)
-    start = sub_search.get_sub_by_id(movie_id, sub_id)
-    return jsonify(make_gif.delay(movie, start, start))
+    return get_gif_range(movie_id, sub_id, sub_id)
 
 
 @app.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
