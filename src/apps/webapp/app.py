@@ -1,20 +1,11 @@
 import os
-from celery import Celery
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-
-
-from model import Base, Movie, Subtitle
+from apps import db
+from apps import flask_app as app
+from flask import request, jsonify
+from model import Movie
 from service import SubsLocatorService, SubSearch
 
 from apps.tasks import make_gif
-
-app = Flask(__name__)
-app.config.from_object('apps.config.Config')
-
-db = SQLAlchemy(app)
-db.Model = Base
-db.create_all()
 
 subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=os.environ.get('OS_PASS'))
 sub_search = SubSearch(db=db)

@@ -1,11 +1,17 @@
 import os
 
-from apps.tasks.celery import app
+from apps import celery_app as app
+from apps import db
 from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.tools import extensions_dict
 
+from service import SubsLocatorService, SubSearch
+
 extensions_dict["mkv"] = {'type': 'video', 'codec': ['libx264', 'libmpeg4', 'aac']}
+
+subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=os.environ.get('OS_PASS'))
+sub_search = SubSearch(db=db)
 
 
 @app.task()
