@@ -67,7 +67,7 @@ def get_gif(movie_id, sub_id):
 
 
 @app.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
-def get_sub_range(movie_id, start_id, end_id):
+def get_gif_range(movie_id, start_id, end_id):
     if end_id - start_id > 10:
         return "too much!"
 
