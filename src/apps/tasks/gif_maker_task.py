@@ -24,6 +24,7 @@ def make_gif(movie_id, start_id, end_id, width=400):
     :param movie_id: Movie file ID 
     :param start_id: Starting subtitle ID
     :param end_id: Ending subtitle ID
+    :return: name of gif
     """
 
     movie = db.session.query(Movie).get(movie_id)
@@ -31,11 +32,11 @@ def make_gif(movie_id, start_id, end_id, width=400):
     end = sub_search.get_sub_by_id(movie_id, end_id)
 
     filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
-    filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
+    full_filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
     # we already have this gif - don't render again
-    if os.path.exists(filename):
-        return
+    if os.path.exists(full_filename):
+        return filename
 
     clip = VideoFileClip(movie.movie_path)
 
@@ -56,4 +57,5 @@ def make_gif(movie_id, start_id, end_id, width=400):
     final = CompositeVideoClip([cropped_vid, cropped_sub])
     final = final.resize(width=400)
 
-    final.write_gif(filename, fps=15)
+    final.write_gif(full_filename, fps=15)
+    return filename

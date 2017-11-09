@@ -1,7 +1,8 @@
+from celery.exceptions import TimeoutError
 import os
 from apps import db
 from apps import flask_app as app
-from flask import request, jsonify, url_for
+from flask import request, jsonify, url_for, send_from_directory, redirect
 from model import Movie
 from service import SubsLocatorService, SubSearch
 
@@ -72,36 +73,22 @@ def get_gif_range(movie_id, start_id, end_id):
         return "too much!"
 
     task = make_gif.delay(movie_id, start_id, end_id)
-    return jsonify({}), 202, {'Location': url_for('gif_render_status', task_id=task.id)}
+    try:
+        gif_file = task.get(timeout=0.5)
+        return redirect(url_for('gif', gif_file=gif_file))
+    except TimeoutError:
+        return redirect(url_for('gif_render_status', task_id=task.id))
 
 
 @app.route('/gif/status/<task_id>')
 def gif_render_status(task_id):
     task = make_gif.AsyncResult(task_id)
-    if task.state == 'PENDING':
-        # job did not start yet
-        response = {
-            'state': task.state,
-            'current': 0,
-            'total': 1,
-            'status': 'Pending...'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'current': task.info.get('current', 0),
-            'total': task.info.get('total', 1),
-            'status': task.info.get('status', '')
-        }
-        if 'result' in task.info:
-            response['result'] = task.info['result']
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'current': 1,
-            'total': 1,
-            'status': str(task.info),  # this is the exception raised
-        }
+    response = {
+        'state': task.state
+    }
     return jsonify(response)
 
+
+@app.route('/gif/<gif_file>')
+def gif(gif_file):
+    return send_from_directory(app.config['GIT_FILE_DIR'], gif_file)

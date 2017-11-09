@@ -3,10 +3,11 @@ elasticsearch
 elasticsearch_dsl
 flask
 flask-sqlalchemy
-SQLAlchemy
-requests
 moviepy
-tqdm
 psycopg2
+redis
+requests
+SQLAlchemy
+tqdm
 
 git+https://github.com/agonzalezro/python-opensubtitles#egg=python-opensubtitles
