@@ -89,6 +89,9 @@ def gif_render_status(task_id):
     response = {
         'state': task.state
     }
+
+    if task.state == "SUCCESS":
+        response["url"] = url_for('gif', gif_file=task.result)
     return jsonify(response)
 
 
