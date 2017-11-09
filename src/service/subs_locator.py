@@ -54,6 +54,16 @@ class SubsLocatorService:
             self.log.info("No subs found for %s on opensubtitles.org")
             return False
 
+    def _find_existing_subs(self, movie):
+        base = os.path.splitext(movie.movie_path)[0]
+
+        for extension in [".srt", ".en.srt", ".eng.srt"]:
+            if os.path.exists(base + extension):
+                self.log.info("Found existing subs at %s%s" % (base, extension))
+                return base + extension
+
+        return None
+
     def get_subs_for_movie(self, movie):
         """
         Extracts or downloads the subtitles for a movie
@@ -68,8 +78,11 @@ class SubsLocatorService:
             movie.subs_path = expected_sub_file
             return True
 
-        # Do we already have subs in the expected place?
-        if os.path.exists(expected_sub_file) and os.path.getsize(expected_sub_file) > 0:
+        # Do we already have subs in the expected places?
+        existing_subs = self._find_existing_subs(movie)
+        if existing_subs:
+            if existing_subs != expected_sub_file:
+                shutil.copy(movie.subs_path, expected_sub_file)
             movie.subs_path = expected_sub_file
             return True
 

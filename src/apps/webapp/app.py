@@ -3,11 +3,14 @@ from celery import Celery
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
+
 from model import Base, Movie, Subtitle
 from service import SubsLocatorService, SubSearch
 
+from apps.tasks import make_gif
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://giffer:password@localhost:5432'
+app.config.from_object('apps.config.Config')
 
 db = SQLAlchemy(app)
 db.Model = Base
@@ -67,11 +70,19 @@ def get_sub_range(movie_id, start_id, end_id):
 
 @app.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
 def get_gif(movie_id, sub_id):
-    return "close"
+    movie = db.session.query(Movie).get(movie_id)
+    start = sub_search.get_sub_by_id(movie_id, sub_id)
+    return jsonify(make_gif.delay(movie, start, start))
 
 
 @app.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
 def get_sub_range(movie_id, start_id, end_id):
     if end_id - start_id > 10:
         return "too much!"
-    return "close"
+
+    movie = db.session.query(Movie).get(movie_id)
+    start = sub_search.get_sub_by_id(movie_id, start_id)
+    end = sub_search.get_sub_by_id(movie_id, end_id)
+    return jsonify(make_gif.delay(movie, start, end))
+
+
