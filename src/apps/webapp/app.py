@@ -12,7 +12,7 @@ subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=o
 sub_search = SubSearch(db=db)
 
 
-@app.route("/movie", methods=["PUT"])
+@app.route("/api/v1/movie", methods=["PUT"])
 def add_movie():
     data = request.get_json()
 
@@ -29,17 +29,17 @@ def add_movie():
         return resp
 
 
-@app.route("/movie")
+@app.route("/api/v1/movie")
 def list_movies():
     return jsonify([movie.to_dict(include_subs=False) for movie in db.session.query(Movie).all()])
 
 
-@app.route("/movie/<int:movie_id>")
+@app.route("/api/v1/movie/<int:movie_id>")
 def get_movie(movie_id):
     return jsonify(db.session.query(Movie).get(movie_id).to_dict())
 
 
-@app.route("/movie/subtitle", methods=["GET"])
+@app.route("/api/v1/movie/subtitle", methods=["GET"])
 def search_subs():
     search = request.args.get('query')
     start = int(request.args.get('start', 0))
@@ -47,7 +47,7 @@ def search_subs():
     return jsonify(sub_search.search_for_quotes(search, start=start, size=size))
 
 
-@app.route("/movie/<int:movie_id>/subtitle", methods=["GET"])
+@app.route("/api/v1/movie/<int:movie_id>/subtitle", methods=["GET"])
 def search_subs_within_movie(movie_id):
     search = request.args.get('query')
     start = int(request.args.get('start', 0))
@@ -55,22 +55,22 @@ def search_subs_within_movie(movie_id):
     return jsonify(sub_search.search_for_quotes(search, movie_id=movie_id, start=start, size=size))
 
 
-@app.route("/movie/<int:movie_id>/subtitle/<int:sub_id>", methods=["GET"])
+@app.route("/api/v1/movie/<int:movie_id>/subtitle/<int:sub_id>", methods=["GET"])
 def get_sub(movie_id, sub_id):
     return jsonify(sub_search.get_sub_by_id(movie_id, sub_id).to_dict(include_movie=False))
 
 
-@app.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>", methods=["GET"])
+@app.route("/api/v1/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>", methods=["GET"])
 def get_sub_range(movie_id, start_id, end_id):
     return jsonify([sub.to_dict(include_movie=False) for sub in sub_search.get_sub_by_range(movie_id, start_id, end_id)])
 
 
-@app.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
+@app.route("/api/v1/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
 def get_gif(movie_id, sub_id):
     return get_gif_range(movie_id, sub_id, sub_id)
 
 
-@app.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
+@app.route("/api/v1/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
 def get_gif_range(movie_id, start_id, end_id):
     if end_id - start_id > 10:
         return "too much!"
@@ -83,7 +83,7 @@ def get_gif_range(movie_id, start_id, end_id):
         return redirect(url_for('gif_render_status', task_id=task.id))
 
 
-@app.route('/gif/status/<task_id>')
+@app.route("/api/v1/gif/status/<task_id>")
 def gif_render_status(task_id):
     task = make_gif.AsyncResult(task_id)
     response = {
@@ -95,6 +95,6 @@ def gif_render_status(task_id):
     return jsonify(response)
 
 
-@app.route('/gif/<gif_file>')
+@app.route("/api/v1/gif/<gif_file>")
 def gif(gif_file):
     return send_from_directory(app.config['GIF_OUTPUT_DIR'], gif_file)

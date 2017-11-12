@@ -152,6 +152,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+node_modules/
 
 movie_paths.py
 env.sh

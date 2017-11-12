@@ -3,6 +3,7 @@ elasticsearch
 elasticsearch_dsl
 flask
 flask-sqlalchemy
+flask-CORS
 moviepy
 psycopg2
 redis
