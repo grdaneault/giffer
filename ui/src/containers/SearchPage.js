@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSubtitleQueryPage } from '../actions'
+import { withRouter } from 'react-router-dom'
+import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSubtitleQueryPage } from '../actions/Search'
 import SubtitleList from '../components/SubtitleList'
 import SearchBox from "../components/SearchBox";
 import PageSelector from "../components/PageSelector";
 
 
-class App extends Component {
+class SearchPage extends Component {
     static propTypes = {
         searchQuery: PropTypes.string.isRequired,
         searchPage: PropTypes.number.isRequired,
@@ -15,29 +16,47 @@ class App extends Component {
         totalResults: PropTypes.number.isRequired,
         size: PropTypes.number.isRequired,
         isSearching: PropTypes.bool.isRequired,
-        dispatch: PropTypes.func.isRequired
+        dispatch: PropTypes.func.isRequired,
+
+        // Injected by React Router
+        children: PropTypes.node,
+        match: PropTypes.object.isRequired,
+        history: PropTypes.object.isRequired
+
     };
 
     componentDidMount() {
-        const { dispatch, searchQuery, searchPage } = this.props;
-        dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage))
+        const { dispatch, searchQuery, searchPage, size, match } = this.props;
+        console.log("MATCH", match);
+        if (match && match.params.searchQuery) {
+            dispatch(setSubtitleQuery(match.params.searchQuery));
+        }
+
+        if (match && match.params.start) {
+            console.log("page", match.params.start / size)
+            dispatch(setSubtitleQueryPage(searchQuery, match.params.start / size, size));
+        }
+
+        dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.searchQuery !== this.props.searchQuery) {
-            const { dispatch, searchQuery, searchPage } = nextProps;
-            dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage))
+            const { dispatch, searchQuery, searchPage, size } = nextProps;
+            dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
         }
     }
 
     handleSearchChange = query => {
         this.props.dispatch(setSubtitleQuery(query));
+        this.props.history.push(`/search/${query}`);
     };
 
     handlePageChange = start => {
-        const { dispatch, searchQuery } = this.props;
-        dispatch(setSubtitleQueryPage(searchQuery, start));
-        dispatch(fetchSearchResultsIfNecessary(searchQuery, start));
+        const { dispatch, searchQuery, size } = this.props;
+        dispatch(setSubtitleQueryPage(searchQuery, start, size));
+        dispatch(fetchSearchResultsIfNecessary(searchQuery, start * size));
+        this.props.history.push(`/search/${searchQuery}/${start * size}`);
     };
 
 
@@ -65,7 +84,7 @@ class App extends Component {
 }
 
 const mapStateToProps = state => {
-    const { searchQuery, searchPage, searchResultsByQuery } = state;
+    const { searchQuery, searchPage, searchResultsByQuery, match } = state;
     const {
         isSearching,
         results,
@@ -91,4 +110,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps)(App)
+export default withRouter(connect(mapStateToProps)(SearchPage));

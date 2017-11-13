@@ -1,4 +1,3 @@
-// import fetch from 'isomorphic-fetch';
 export const SET_SUBTITLE_QUERY = 'SET_SUBTITLE_QUERY';
 export const SET_SUBTITLE_PAGE = 'SET_SUBTITLE_PAGE';
 export const REQUEST_SEARCH_RESULTS = 'REQUEST_SEARCH_RESULTS';

@@ -4,14 +4,20 @@
   "private": true,
   "devDependencies": {
     "react-scripts": "^1.0.2",
+    "redux-devtools": "^3.4.1",
+    "redux-devtools-dock-monitor": "^1.1.2",
+    "redux-devtools-log-monitor": "^1.4.0",
     "redux-logger": "^3.0.6"
   },
   "dependencies": {
+    "immutable": "^3.8.2",
     "isomorphic-fetch": "^2.2.1",
     "prop-types": "^15.5.10",
+    "rc-slider": "^8.4.0",
     "react": "^15.5.0",
     "react-dom": "^15.5.0",
     "react-redux": "^5.0.5",
+    "react-router-dom": "^4.2.2",
     "redux": "^3.5.2",
     "redux-thunk": "^2.1.0"
   },

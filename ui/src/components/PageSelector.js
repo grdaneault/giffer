@@ -8,8 +8,6 @@ const PageSelector = ({ pages, page, onChange }) => {
         options.push(<option value={i} key={i}>Page {i + 1}</option>);
     }
 
-    console.log("I want to select page", page, " of ", pages);
-
     return (
     <span>
     <select onChange={e => onChange(e.target.value)} value={page}>
