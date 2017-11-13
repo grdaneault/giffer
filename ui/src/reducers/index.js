@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux'
 import movies from "./Movie";
-import creatorReducers from "./Creator";
-import searchReducers from "./Search";
+import {renderStart, renderEnd, subtitlesByIdByMovie} from "./Creator";
+import {searchPage, searchQuery, searchResultsByQuery} from "./Search";
 
-const rootReducer = combineReducers({searchReducers, movies, ...creatorReducers});
+const rootReducer = combineReducers({searchPage, searchQuery, searchResultsByQuery, movies, renderStart, renderEnd, subtitlesByIdByMovie});
 
 export default rootReducer;

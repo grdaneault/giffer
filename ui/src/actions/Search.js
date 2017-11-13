@@ -12,7 +12,7 @@ export const setSubtitleQuery = (query) => ({
 export const setSubtitleQueryPage = (query, page) => ({
     type: SET_SUBTITLE_PAGE,
     query,
-    page: parseInt(page)
+    page: parseInt(page, 10)
 });
 
 export const requestSearchResults = (query, start) => ({

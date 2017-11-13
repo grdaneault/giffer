@@ -1,22 +1,19 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSubtitleQueryPage } from '../actions/Search'
 
 import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
-import {setSubtitleRenderRange} from "../actions/Creator";
+import {setSubtitleRenderRange, fetchMovieSubtitlesIfNecessary} from "../actions/Creator";
 import {fetchMovieIfNecessary, setMovie} from "../actions/Movie";
+import {triggerRender} from "../actions/Render";
 
 
 class GifCreationPage extends Component {
     static propTypes = {
-        movie: PropTypes.shape({
-            id: PropTypes.number.isRequired,
-            name: PropTypes.string.isRequired,
-        }).isRequired,
-        movies: PropTypes.object.isRequired,
+        movie: PropTypes.object.isRequired,
+        movieId: PropTypes.number.isRequired,
         subtitles: PropTypes.object.isRequired,
         isRendering: PropTypes.bool,
 
@@ -32,56 +29,78 @@ class GifCreationPage extends Component {
     };
 
     componentDidMount() {
-        const { dispatch, searchQuery, searchPage, size, match } = this.props;
-        if (match && match.params.movieId) {
+        const { dispatch, match } = this.props;
+
+        if (match && match.params.movieId && match.params.start) {
             dispatch(fetchMovieIfNecessary(match.params.movieId));
             dispatch(setMovie(match.params.movieId));
-        }
-
-        dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.searchQuery !== this.props.searchQuery) {
-            const { dispatch, searchQuery, searchPage, size } = nextProps;
-            dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
+            const baseId = parseInt(match.params.start, 10);
+            dispatch(fetchMovieSubtitlesIfNecessary(match.params.movieId, baseId - 10, baseId + 10))
+            dispatch(setSubtitleRenderRange(baseId, baseId));
         }
     }
 
+    renderGif() {
+        const {movieId, startId, endId} = this.props;
+        triggerRender(movieId, startId, endId);
+    }
 
     render() {
-        const style = { float: 'left', width: 160, height: 400, marginBottom: 160, marginLeft: 50 };
+        const style = { float: 'left', width: 560, height: 400, marginBottom: 560, marginLeft: 50 };
         const parentStyle = { overflow: 'hidden' };
-        const { subtitles, dispatch, startId, endId } = this.props;
-        const marks = subtitles.subtitles.map(subtitle => subtitle.text);
+        const { movie, movieId, dispatch, startId, endId, subtitles } = this.props;
 
-        console.log(marks);
-        return (
-            <div style={parentStyle}>
-                <div style={style}>
-                    <Slider
-                        vertical
-                        min={subtitles.minId}
-                        max={subtitles.maxId}
-                        marks={marks}
-                        step={null}
-                        onChange={range => {dispatch(setSubtitleRenderRange(range[0], range[1]))}}
-                        defaultValue={[startId, endId]} />
+        if (movieId && !subtitles.isLoading) {
+
+            let marks = {};
+            console.log("subbies", subtitles);
+            marks = Object.values(subtitles.subtitles).reduce((marks, subtitle) => {marks[subtitle.sub_id] = {
+                style: {
+                    width: '500px',
+                    textAlign: 'left'
+                },
+                label: <span>{subtitle.text}</span>
+            }; return marks}, marks);
+
+            // const marks = {0: "thing", 50: "other", 616: "stuff"};
+            console.log("MARKS!!", marks);
+            return (
+                <div style={parentStyle}>
+                    <h1>{movie.name}</h1>
+                    <div style={style}>
+                        <Slider.Range
+                            vertical
+                            min={subtitles.minId}
+                            max={subtitles.maxId}
+                            marks={marks}
+                            step={null}
+                            onChange={range => {
+                                console.log("Selected!", range);
+                                dispatch(setSubtitleRenderRange(range[0], range[1]))
+                            }}
+                            allowCross={true}
+                            defaultValue={[startId, endId]} />
+                    </div>
+                    <div>
+                        <button>Do the shit</button>
+                    </div>
                 </div>
-            </div>
-        )
+            )
+        } else {
+            return (
+                <div><h1>Loading!</h1></div>
+            )
+        }
     }
 }
 
 const mapStateToProps = state => {
-    const { renderStart, renderEnd, subtitlesByIdByMovie, movie, movies, isRendering } = state;
-
-    const subtitles = movie ? subtitlesByIdByMovie[movie.id] : {subtitles: []};
+    const { renderStart, renderEnd, movies, isRendering, subtitlesByIdByMovie } = state;
 
     return {
-        movie,
-        movies,
-        subtitles,
+        movie: movies.getIn(['movieMap', movies.get('selectedMovieId')]),
+        movieId: movies.get('selectedMovieId'),
+        subtitles: subtitlesByIdByMovie[movies.get('selectedMovieId')],
         startId: renderStart,
         endId: renderEnd,
         isRendering

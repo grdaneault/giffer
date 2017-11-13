@@ -76,18 +76,15 @@ def get_gif_range(movie_id, start_id, end_id):
         return "too much!"
 
     task = make_gif.delay(movie_id, start_id, end_id)
-    try:
-        gif_file = task.get(timeout=0.5)
-        return redirect(url_for('gif', gif_file=gif_file))
-    except TimeoutError:
-        return redirect(url_for('gif_render_status', task_id=task.id))
+    return redirect(url_for('gif_render_status', task_id=task.id))
 
 
 @app.route("/api/v1/gif/status/<task_id>")
 def gif_render_status(task_id):
     task = make_gif.AsyncResult(task_id)
     response = {
-        'state': task.state
+        'state': task.state,
+        'renderId': task_id
     }
 
     if task.state == "SUCCESS":

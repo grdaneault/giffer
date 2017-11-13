@@ -1,8 +1,7 @@
-import { combineReducers } from 'redux'
 import { SET_SUBTITLE_RANGE, RECEIVE_MOVIE_SUBTITLES, REQUEST_MOVIE_SUBTITLES} from '../actions/Creator'
 
 
-const renderStart = (state = 0, action) => {
+export const renderStart = (state = 0, action) => {
     switch (action.type) {
         case SET_SUBTITLE_RANGE:
             return action.start;
@@ -11,7 +10,7 @@ const renderStart = (state = 0, action) => {
     }
 };
 
-const renderEnd = (state = 0, action) => {
+export const renderEnd = (state = 0, action) => {
     switch (action.type) {
         case SET_SUBTITLE_RANGE:
             return action.end;
@@ -46,20 +45,16 @@ const subtitles = (state = {
     }
 };
 
-const subtitlesByIdByMovie = (state = { }, action) => {
+export const subtitlesByIdByMovie = (state = { }, action) => {
     switch (action.type) {
         case REQUEST_MOVIE_SUBTITLES:
         case RECEIVE_MOVIE_SUBTITLES:
         case SET_SUBTITLE_RANGE:
             return {
                 ...state,
-                [action.movie.id]: subtitles(state[action.movie.id], action)
+                [action.movieId]: subtitles(state[action.movieId], action)
             };
         default:
             return state;
     }
 };
-
-const creatorReducers = {renderStart, renderEnd, subtitlesByIdByMovie};
-
-export default creatorReducers;

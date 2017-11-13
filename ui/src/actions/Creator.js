@@ -9,26 +9,26 @@ export const setSubtitleRenderRange = (start, end) => ({
 });
 
 
-export const requestMovieSubtitles = (movie, start, end) => ({
+export const requestMovieSubtitles = (movieId, start, end) => ({
     type: REQUEST_MOVIE_SUBTITLES,
-    movie,
+    movieId,
     start,
     end
 });
 
-export const receiveMovieSubtitles = (movie, start, end, json) => ({
+export const receiveMovieSubtitles = (movieId, start, end, json) => ({
     type: RECEIVE_MOVIE_SUBTITLES,
     subtitles: json,
-    movie,
+    movieId,
     start,
     end
 });
 
-const fetchMovieSubtitles = (movie, start, end) => dispatch => {
-    dispatch(requestMovieSubtitles(movie, start, end));
-    return fetch(`http://localhost:5000/api/v1/movie/${movie.id}/subtitle/${start}:${end}`)
+const fetchMovieSubtitles = (movieId, start, end) => dispatch => {
+    dispatch(requestMovieSubtitles(movieId, start, end));
+    return fetch(`http://localhost:5000/api/v1/movie/${movieId}/subtitle/${start}:${end}`)
         .then(response => response.json())
-        .then(json => dispatch(receiveMovieSubtitles(movie, start, end, json)))
+        .then(json => dispatch(receiveMovieSubtitles(movieId, start, end, json)))
 };
 
 const shouldFetchMovieSubtitles = (state, movie, start, end) => {
@@ -39,19 +39,13 @@ const shouldFetchMovieSubtitles = (state, movie, start, end) => {
         return false;
     }
 
-    for (let i = start; i <= end; i++) {
-        if (!subs.hasOwnProperty(i)) {
-            return true;
-        }
-    }
-
-    return false;
+    return true;
 };
 
-export const fetchMovieSubtitlesIfNecessary = (movie, start, end) => (dispatch, getState) => {
-    if (shouldFetchMovieSubtitles(getState(), movie, start, end)) {
-        return dispatch(fetchMovieSubtitles(movie, start, end));
+export const fetchMovieSubtitlesIfNecessary = (movieId, start, end) => (dispatch, getState) => {
+    if (shouldFetchMovieSubtitles(getState(), movieId, start, end)) {
+        return dispatch(fetchMovieSubtitles(movieId, start, end));
     } else {
-        console.log("nope.")
+        console.log("not fetching subs.")
     }
 };

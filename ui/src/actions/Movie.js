@@ -3,9 +3,9 @@ export const REQUEST_MOVIE = 'REQUEST_MOVIE';
 export const RECEIVE_MOVIE = 'RECEIVE_MOVIE';
 
 
-export const setMovie = (movie) => ({
+export const setMovie = (movieId) => ({
     type: SET_MOVIE,
-    movie
+    movieId
 });
 
 export const requestMovie = (movieId) => ({
@@ -27,7 +27,7 @@ const fetchMovie = (movieId) => dispatch => {
 };
 
 const shouldFetchMovie = (state, movieId) => {
-    return !state.movies[movieId].isLoading;
+    return true; //!state.movies.getIn(['movieMap', 'movieId', 'isLoading']);
 };
 
 export const fetchMovieIfNecessary = (movieId) => (dispatch, getState) => {

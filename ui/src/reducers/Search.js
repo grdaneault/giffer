@@ -1,8 +1,7 @@
-import { combineReducers } from 'redux'
 import {SET_SUBTITLE_QUERY, SET_SUBTITLE_PAGE, REQUEST_SEARCH_RESULTS, RECEIVE_SEARCH_RESULTS} from '../actions/Search'
 
 
-const searchQuery = (state = '', action) => {
+export const searchQuery = (state = '', action) => {
     switch (action.type) {
         case SET_SUBTITLE_QUERY:
             return action.query;
@@ -11,7 +10,7 @@ const searchQuery = (state = '', action) => {
     }
 };
 
-const searchPage = (state = 0, action) => {
+export const searchPage = (state = 0, action) => {
     switch (action.type) {
         case SET_SUBTITLE_PAGE:
             return action.page * 20;
@@ -54,7 +53,7 @@ const search = (state = {
     }
 };
 
-const searchResultsByQuery = (state = { }, action) => {
+export const searchResultsByQuery = (state = { }, action) => {
     switch (action.type) {
         case REQUEST_SEARCH_RESULTS:
         case RECEIVE_SEARCH_RESULTS:
@@ -67,7 +66,3 @@ const searchResultsByQuery = (state = { }, action) => {
             return state;
     }
 };
-
-const searchReducers = combineReducers({searchQuery, searchPage, searchResultsByQuery});
-
-export default searchReducers;
