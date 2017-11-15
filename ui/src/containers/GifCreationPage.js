@@ -33,10 +33,12 @@ class GifCreationPage extends Component {
         const { dispatch, match } = this.props;
 
         if (match && match.params.movieId && match.params.start) {
-            dispatch(fetchMovieIfNecessary(match.params.movieId));
-            dispatch(setMovie(match.params.movieId));
+            const movieId = parseInt(match.params.movieId, 10);
             const baseId = parseInt(match.params.start, 10);
-            dispatch(fetchMovieSubtitlesIfNecessary(match.params.movieId, baseId - 10, baseId + 10))
+            dispatch(fetchMovieIfNecessary(movieId));
+            dispatch(setMovie(movieId));
+
+            dispatch(fetchMovieSubtitlesIfNecessary(movieId, baseId - 10, baseId + 10));
             dispatch(setSubtitleRenderRange(baseId, baseId));
         }
     }
@@ -48,6 +50,7 @@ class GifCreationPage extends Component {
         console.log("RENDER", render);
 
         if (movieId && !subtitles.isLoading) {
+            const renderStyle = {visibility: render.get('url') ? 'visible': 'hidden'};
 
             let marks = {};
             marks = Object.values(subtitles.subtitles).reduce((marks, subtitle) => {marks[subtitle.sub_id] = {
@@ -81,10 +84,9 @@ class GifCreationPage extends Component {
                             const {movieId, startId, endId, dispatch} = this.props;
                             console.log("STARTING RENDER", movieId, startId, endId);
                             dispatch(triggerRender(movieId, startId, endId));
-                        }}>Do the shit</button>
-                        <p>status:{render.get('state')}</p>
-                        <p>url:{render.get('url')}</p>
-                        <img src={'http://localhost:5000' + render.get('url')} />
+                        }}>Render</button>
+                        {render.get('state') !== 'NOT STARTED' && <p>status: {render.get('state')}</p>}
+                        <img style={renderStyle} src={'http://localhost:5000' + render.get('url')} />
                     </div>
                 </div>
             )
