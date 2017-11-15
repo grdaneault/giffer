@@ -15,10 +15,11 @@ class GifCreationPage extends Component {
         movie: PropTypes.object.isRequired,
         movieId: PropTypes.number.isRequired,
         subtitles: PropTypes.object.isRequired,
-        isRendering: PropTypes.bool,
 
         startId: PropTypes.number.isRequired,
         endId: PropTypes.number.isRequired,
+
+        render: PropTypes.object.isRequired,
 
         dispatch: PropTypes.func.isRequired,
 
@@ -40,20 +41,15 @@ class GifCreationPage extends Component {
         }
     }
 
-    renderGif() {
-        const {movieId, startId, endId} = this.props;
-        triggerRender(movieId, startId, endId);
-    }
-
     render() {
         const style = { float: 'left', width: 560, height: 400, marginBottom: 560, marginLeft: 50 };
         const parentStyle = { overflow: 'hidden' };
-        const { movie, movieId, dispatch, startId, endId, subtitles } = this.props;
+        const { movie, movieId, dispatch, startId, endId, subtitles, render } = this.props;
+        console.log("RENDER", render);
 
         if (movieId && !subtitles.isLoading) {
 
             let marks = {};
-            console.log("subbies", subtitles);
             marks = Object.values(subtitles.subtitles).reduce((marks, subtitle) => {marks[subtitle.sub_id] = {
                 style: {
                     width: '500px',
@@ -63,7 +59,6 @@ class GifCreationPage extends Component {
             }; return marks}, marks);
 
             // const marks = {0: "thing", 50: "other", 616: "stuff"};
-            console.log("MARKS!!", marks);
             return (
                 <div style={parentStyle}>
                     <h1>{movie.name}</h1>
@@ -82,7 +77,14 @@ class GifCreationPage extends Component {
                             defaultValue={[startId, endId]} />
                     </div>
                     <div>
-                        <button>Do the shit</button>
+                        <button onClick={(e) => {
+                            const {movieId, startId, endId, dispatch} = this.props;
+                            console.log("STARTING RENDER", movieId, startId, endId);
+                            dispatch(triggerRender(movieId, startId, endId));
+                        }}>Do the shit</button>
+                        <p>status:{render.get('state')}</p>
+                        <p>url:{render.get('url')}</p>
+                        <img src={'http://localhost:5000' + render.get('url')} />
                     </div>
                 </div>
             )
@@ -95,7 +97,7 @@ class GifCreationPage extends Component {
 }
 
 const mapStateToProps = state => {
-    const { renderStart, renderEnd, movies, isRendering, subtitlesByIdByMovie } = state;
+    const { renderStart, renderEnd, movies, gifRender, subtitlesByIdByMovie } = state;
 
     return {
         movie: movies.getIn(['movieMap', movies.get('selectedMovieId')]),
@@ -103,7 +105,7 @@ const mapStateToProps = state => {
         subtitles: subtitlesByIdByMovie[movies.get('selectedMovieId')],
         startId: renderStart,
         endId: renderEnd,
-        isRendering
+        render: gifRender
     };
 };
 

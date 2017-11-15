@@ -8,25 +8,28 @@ const initialState = Map({
     startId: 0,
     endId: 0,
     renderId: "",
-    url: ""
+    url: "",
+    state: "NOT STARTED"
 });
 
-const movies = (state = initialState, action) => {
+const gifRender = (state = initialState, action) => {
     switch (action.type) {
         case RENDER_GIF_START:
             return state
                 .set('movieId', action.movieId)
                 .set('startId', action.startId)
                 .set('endId', action.endId)
-                .set('renderId', action.renderId);
+                .set('renderId', action.renderId)
+                .set('renderInProgress', true);
         case RECEIVE_GIF_STATUS:
             return state
                 .set('url', action.url)
                 .set('renderId', action.renderId)
-                .set('status', action.status);
+                .set('state', action.state)
+                .set('renderInProgress', action.state !== "SUCCESS");
         default:
             return state;
     }
 };
 
-export default movies;
+export default gifRender;
