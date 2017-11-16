@@ -21,7 +21,7 @@ export const receiveMovie = (movieId, json) => ({
 
 const fetchMovie = (movieId) => dispatch => {
     dispatch(requestMovie(movieId));
-    return fetch(`http://localhost:5000/api/v1/movie/${movieId}`)
+    return fetch(`/api/v1/movie/${movieId}`)
         .then(response => response.json())
         .then(json => dispatch(receiveMovie(movieId, json)))
 };

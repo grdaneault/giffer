@@ -26,7 +26,7 @@ export const receiveMovieSubtitles = (movieId, start, end, json) => ({
 
 const fetchMovieSubtitles = (movieId, start, end) => dispatch => {
     dispatch(requestMovieSubtitles(movieId, start, end));
-    return fetch(`http://localhost:5000/api/v1/movie/${movieId}/subtitle/${start}:${end}`)
+    return fetch(`/api/v1/movie/${movieId}/subtitle/${start}:${end}`)
         .then(response => response.json())
         .then(json => dispatch(receiveMovieSubtitles(movieId, start, end, json)))
 };

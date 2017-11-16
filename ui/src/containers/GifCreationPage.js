@@ -65,6 +65,7 @@ class GifCreationPage extends Component {
             return (
                 <div style={parentStyle}>
                     <h1>{movie.name}</h1>
+                    <img src={"/api/v1/movie/" + movie.id + "/art/poster.jpg"} width={200} />
                     <div style={style}>
                         <Slider.Range
                             vertical
@@ -86,7 +87,7 @@ class GifCreationPage extends Component {
                             dispatch(triggerRender(movieId, startId, endId));
                         }}>Render</button>
                         {render.get('state') !== 'NOT STARTED' && <p>status: {render.get('state')}</p>}
-                        <img style={renderStyle} src={'http://localhost:5000' + render.get('url')} />
+                        <img style={renderStyle} src={render.get('url')} />
                     </div>
                 </div>
             )

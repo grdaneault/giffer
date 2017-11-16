@@ -1,12 +1,14 @@
-from celery.exceptions import TimeoutError
 import os
+import re
+
+from flask import request, jsonify, url_for, send_from_directory, redirect
+from werkzeug.exceptions import NotFound
+
 from apps import db
 from apps import flask_app as app
-from flask import request, jsonify, url_for, send_from_directory, redirect
+from apps.tasks import make_gif
 from model import Movie
 from service import SubsLocatorService, SubSearch
-
-from apps.tasks import make_gif
 
 subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=os.environ.get('OS_PASS'))
 sub_search = SubSearch(db=db)
@@ -15,6 +17,15 @@ sub_search = SubSearch(db=db)
 @app.route("/api/v1/movie", methods=["PUT"])
 def add_movie():
     data = request.get_json()
+
+    if 'name' not in data:
+        match = re.match("(.+)\s\(\d+p\)\..+", os.path.basename(data['movie_file']))
+        if match:
+            data['name'] = match.group(1)
+        else:
+            resp = jsonify({"success": False, "message": "Missing name for movie!"})
+            resp.status_code = 400
+            return resp
 
     movie = Movie(data['name'], data['movie_file'], data.get('subs_file'))
     if subs_service.get_subs_for_movie(movie):
@@ -29,6 +40,20 @@ def add_movie():
         return resp
 
 
+@app.route("/api/v1/movie/<int:movie_id>", methods=["DELETE"])
+def remove_movie(movie_id):
+    movie = db.session.query(Movie).get(movie_id)
+    if not movie:
+        return jsonify({"success": False, "message": "No movie %d" % movie_id}), 400
+
+    for sub in movie.subtitles:
+        db.session.delete(sub)
+    db.session.delete(movie)
+    sub_search.remove_movie(movie)
+    db.session.commit()
+    return jsonify({"success": True, "message": "Deleted %s (%d)" % (movie.movie_path, movie.id)})
+
+
 @app.route("/api/v1/movie")
 def list_movies():
     return jsonify([movie.to_dict(include_subs=False) for movie in db.session.query(Movie).all()])
@@ -39,12 +64,22 @@ def get_movie(movie_id):
     return jsonify(db.session.query(Movie).get(movie_id).to_dict())
 
 
+@app.route("/api/v1/movie/<int:movie_id>/art/<type>")
+def get_movie_art(movie_id, type):
+    if type not in ["poster.jpg", "fanart.jpg", "landscape.jpg", "logo.png", "banner.jpg", "clearart.png", "disc.png"]:
+        raise NotFound()
+    movie = db.session.query(Movie).get(movie_id)
+
+    return send_from_directory(os.path.dirname(movie.movie_path), type)
+
+
 @app.route("/api/v1/movie/subtitle", methods=["GET"])
 def search_subs():
     search = request.args.get('query')
     start = int(request.args.get('start', 0))
     size = int(request.args.get('size', 20))
     return jsonify(sub_search.search_for_quotes(search, start=start, size=size))
+
 
 
 @app.route("/api/v1/movie/<int:movie_id>/subtitle", methods=["GET"])

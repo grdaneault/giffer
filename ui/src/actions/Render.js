@@ -17,7 +17,7 @@ export const receiveGifStatus = (json) => ({
 });
 
 export const updateRenderStatus = (renderId) => dispatch => {
-    return fetch(`http://localhost:5000/api/v1/gif/status/${renderId}`)
+    return fetch(`/api/v1/gif/status/${renderId}`)
         .then(response => response.json())
         .then(json => {
             dispatch(receiveGifStatus(json));
@@ -34,7 +34,7 @@ export const triggerRender = (movieId, startId, endId) => dispatch => {
     console.log("triggered");
     dispatch(renderGif(movieId, startId, endId));
 
-    return fetch(`http://localhost:5000/api/v1/movie/${movieId}/subtitle/${startId}:${endId}/gif`)
+    return fetch(`/api/v1/movie/${movieId}/subtitle/${startId}:${endId}/gif`)
         .then(response => response.json())
         .then(json => {
             dispatch(receiveGifStatus(json));

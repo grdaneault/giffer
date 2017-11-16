@@ -30,7 +30,7 @@ export const receiveSearchResults = (query, json) => ({
 
 const fetchSearchResults = (query, start) => dispatch => {
     dispatch(requestSearchResults(query, start));
-    return fetch(`http://localhost:5000/api/v1/movie/subtitle?start=${start}&query=${query}`)
+    return fetch(`/api/v1/movie/subtitle?start=${start}&query=${query}`)
         .then(response => response.json())
         .then(json => dispatch(receiveSearchResults(query, json)))
 };
