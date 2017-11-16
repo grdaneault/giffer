@@ -38,7 +38,7 @@ class GifCreationPage extends Component {
             dispatch(fetchMovieIfNecessary(movieId));
             dispatch(setMovie(movieId));
 
-            dispatch(fetchMovieSubtitlesIfNecessary(movieId, baseId - 10, baseId + 10));
+            dispatch(fetchMovieSubtitlesIfNecessary(movieId, Math.max(baseId - 10, 1), baseId + 10));
             dispatch(setSubtitleRenderRange(baseId, baseId));
         }
     }

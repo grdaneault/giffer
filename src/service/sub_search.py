@@ -28,6 +28,19 @@ class SubSearch:
             "_source": sub.to_dict()
         } for sub in movie.subtitles])
 
+    def remove_movie(self, movie):
+        elasticsearch.helpers.bulk(self.es, [{
+            "_id": "%d-%d" % (movie.id, sub.sub_id),
+            "_index": INDEX_SUBTITLES,
+            "_type": "subtitle",
+            "_op_type": "delete"
+        } for sub in movie.subtitles] + [{
+            "_id": movie.id,
+            "_index": INDEX_MOVIES,
+            "_type": "movie",
+            "_op_type": "delete"
+        }], raise_on_error=False)
+
     def search_for_quotes(self, query, movie_id=None, start=0, size=10):
         search = Search(using=self.es, index=INDEX_SUBTITLES).query("match", text=query)
 
