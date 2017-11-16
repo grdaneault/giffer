@@ -34,6 +34,12 @@ def make_gif(movie_id, start_id, end_id, width=400):
     filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
     full_filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
+    font_size = 72  # 720p
+    if "360p" in movie.movie_path:
+        font_size = 36
+    elif "480p" in movie.movie_path:
+        font_size = 36
+
     # we already have this gif - don't render again
     if os.path.exists(full_filename):
         return filename
@@ -42,7 +48,7 @@ def make_gif(movie_id, start_id, end_id, width=400):
 
     def subtitler(text):
         return TextClip(text, font='Helvetica-Bold',
-                        fontsize=72, color='white',
+                        fontsize=font_size, color='white',
                         method='caption', size=(clip.w, None),
                         stroke_color='black', stroke_width=2)
 
