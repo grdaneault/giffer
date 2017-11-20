@@ -1,4 +1,5 @@
-werkzeug
+botocore
+boto3
 celery
 elasticsearch
 elasticsearch_dsl
@@ -11,5 +12,6 @@ redis
 requests
 SQLAlchemy
 tqdm
+werkzeug
 
 git+https://github.com/agonzalezro/python-opensubtitles#egg=python-opensubtitles

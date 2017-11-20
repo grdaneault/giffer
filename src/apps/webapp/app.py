@@ -123,7 +123,7 @@ def gif_render_status(task_id):
     }
 
     if task.state == "SUCCESS":
-        response["url"] = url_for('gif', gif_file=task.result)
+        response["url"] = task.result if task.result.startswith("https://") else url_for('gif', gif_file=task.result)
     return jsonify(response)
 
 

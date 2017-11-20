@@ -1,20 +1,19 @@
 import os
 
-from apps import celery_app as app
-from apps import db
 from moviepy.editor import *
-from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.tools import extensions_dict
+from moviepy.video.tools.subtitles import SubtitlesClip
 
-from service import SubsLocatorService, SubSearch
-
+from apps import celery_app as app, Config
+from apps import db
 from model import Movie
+from service import SubsLocatorService, SubSearch, GifUploadService
 
 extensions_dict["mkv"] = {'type': 'video', 'codec': ['libx264', 'libmpeg4', 'aac']}
 
-subs_service = SubsLocatorService(username=os.environ.get('OS_USER'), password=os.environ.get('OS_PASS'))
+subs_service = SubsLocatorService(username=Config.OS_USERNAME, password=Config.OS_PASSWORD)
 sub_search = SubSearch(db=db)
-
+upload_service = GifUploadService(Config)
 
 @app.task()
 def make_gif(movie_id, start_id, end_id, width=400):
@@ -34,17 +33,15 @@ def make_gif(movie_id, start_id, end_id, width=400):
     filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
     full_filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
-    font_size = 72  # 720p
-    if "360p" in movie.movie_path:
-        font_size = 36
-    elif "480p" in movie.movie_path:
-        font_size = 36
-
     # we already have this gif - don't render again
+    if upload_service.file_exists(filename):
+        return upload_service.get_url_of_upload(filename)
+
     if os.path.exists(full_filename):
-        return filename
+        return upload_service.upload_file(full_filename)
 
     clip = VideoFileClip(movie.movie_path)
+    font_size = clip.h // 10  # Scale the font size to an appropriate size based on the dimensions of the movie
 
     def subtitler(text):
         return TextClip(text, font='Helvetica-Bold',
@@ -61,7 +58,8 @@ def make_gif(movie_id, start_id, end_id, width=400):
     cropped_sub = cropped_sub.set_position(("center", "bottom"))
 
     final = CompositeVideoClip([cropped_vid, cropped_sub])
-    final = final.resize(width=400)
+    final = final.resize(width=width)
 
     final.write_gif(full_filename, fps=15)
-    return filename
+
+    return upload_service.upload_file(full_filename)
