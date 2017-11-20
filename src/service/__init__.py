@@ -1,3 +1,3 @@
-from service.gif_upload import GifUploadService
+from service.file_upload import FileUploadService
 from service.subs_locator import SubsLocatorService
 from service.sub_search import SubSearch

@@ -3,11 +3,11 @@ import os
 from apps import celery_app as app
 from apps import db, Config
 from model import Movie
-from service import SubsLocatorService, SubSearch, GifUploadService
+from service import SubsLocatorService, SubSearch, FileUploadService
 
 subs_service = SubsLocatorService(Config)
 sub_search = SubSearch(config=Config, db=db)
-upload_service = GifUploadService(Config)
+upload_service = FileUploadService(Config)
 
 @app.task()
 def make_gif(movie_id, start_id, end_id, width=400):
@@ -35,10 +35,10 @@ def make_gif(movie_id, start_id, end_id, width=400):
 
     # we already have this gif - don't render again
     if upload_service.file_exists(filename):
-        return upload_service.get_url_of_upload(filename)
+        return upload_service.get_url_of_gif(filename)
 
     if os.path.exists(full_filename):
-        return upload_service.upload_file(full_filename)
+        return upload_service.upload_gif(full_filename)
 
     clip = VideoFileClip(movie.movie_path)
     font_size = clip.h // 10  # Scale the font size to an appropriate size based on the dimensions of the movie
@@ -62,4 +62,4 @@ def make_gif(movie_id, start_id, end_id, width=400):
 
     final.write_gif(full_filename, fps=15)
 
-    return upload_service.upload_file(full_filename)
+    return upload_service.upload_gif(full_filename)

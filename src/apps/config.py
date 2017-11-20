@@ -27,6 +27,8 @@ class Config:
     DO_SPACES_BUCKET = os.environ.get('DO_SPACES_BUCKET', 'giffer')
     DO_SPACES_REGION = os.environ.get('DO_SPACES_REGION', 'nyc3')
 
+    DO_GIF_DIR = os.environ.get('DO_GIF_DIR', 'gifs/')
+    DO_MOVIE_DIR = os.environ.get('DO_MOVIE_DIR', 'movies/')
 
 
 

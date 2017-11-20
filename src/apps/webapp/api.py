@@ -1,44 +1,45 @@
 import os
-import re
 
 from flask import request, jsonify, url_for, send_from_directory, redirect, Blueprint
 from werkzeug.exceptions import NotFound
 
-from apps.tasks import make_gif
+from apps.tasks import make_gif, load_movie
 from model import Movie
-from service import SubsLocatorService, SubSearch
+from service import SubSearch
 
 
 def make_api_blueprint(db, config):
-    subs_service = SubsLocatorService(config)
     sub_search = SubSearch(config, db=db)
 
     api = Blueprint('api', __name__)
 
-    @api.route("/movie", methods=["PUT"])
+    @api.route("/movie", methods=["POST"])
     def add_movie():
         data = request.get_json()
 
-        if 'name' not in data:
-            match = re.match("(.+)\s\(\d+p\)\..+", os.path.basename(data['movie_file']))
-            if match:
-                data['name'] = match.group(1)
-            else:
-                resp = jsonify({"success": False, "message": "Missing name for movie!"})
-                resp.status_code = 400
-                return resp
+        task = load_movie.delay(data['movie_file'])
 
-        movie = Movie(data['name'], data['movie_file'], data.get('subs_file'))
-        if subs_service.get_subs_for_movie(movie):
-            movie.load_subs()
-            db.session.add(movie)
-            db.session.commit()
-            sub_search.index_movie(movie)
-            return jsonify(movie.to_dict(include_subs=False))
-        else:
-            resp = jsonify({"success": False, "message": "could not find subs for %s" % movie.movie_path})
-            resp.status_code = 400
-            return resp
+        return redirect(url_for('api.movie_load_status', task_id=task.id), code=303)
+
+    @api.route("/movie/status/<task_id>")
+    def movie_load_status(task_id):
+        task = load_movie.AsyncResult(task_id)
+        response = {
+            'state': task.state,
+            'renderId': task_id
+        }
+
+        if task.state == "SUCCESS":
+            if 'success' in task.result:
+                response.update(task.result)
+                return jsonify(response), 400
+            else:
+                movie = Movie(**task.result)
+                db.session.add(movie)
+                db.session.commit()
+                sub_search.index_movie(movie)
+                response["movie"] = movie.to_dict(include_subs=False)
+        return jsonify(response)
 
     @api.route("/movie/<int:movie_id>")
     def get_movie(movie_id):
@@ -111,7 +112,7 @@ def make_api_blueprint(db, config):
             return jsonify({"success": False, "message": "Can't request more than 10 lines of a movie"}), 400
 
         task = make_gif.delay(movie_id, start_id, end_id)
-        return redirect(url_for('gif_render_status', task_id=task.id))
+        return redirect(url_for('api.gif_render_status', task_id=task.id))
 
     @api.route("/gif/status/<task_id>")
     def gif_render_status(task_id):
@@ -122,7 +123,7 @@ def make_api_blueprint(db, config):
         }
 
         if task.state == "SUCCESS":
-            response["url"] = task.result if task.result.startswith("https://") else url_for('gif', gif_file=task.result)
+            response["url"] = task.result if task.result.startswith("https://") else url_for('api.gif', gif_file=task.result)
         return jsonify(response)
 
     @api.route("/gif/<gif_file>")

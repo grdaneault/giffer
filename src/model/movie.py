@@ -15,10 +15,11 @@ class Movie(Base):
     name = Column(String(256))
     movie_path = Column(String)
     subs_path = Column(String)
+    cover_image = Column(String)
 
     subtitles = relationship("Subtitle", order_by=Subtitle.sub_id, back_populates="movie")
 
-    def __init__(self, name, movie_path, subs_path=None):
+    def __init__(self, name, movie_path, subs_path=None, cover_image=None, subtitles=None, id=None):
         self.name = name
 
         if not os.path.isfile(movie_path):
@@ -26,11 +27,19 @@ class Movie(Base):
 
         self.movie_path = movie_path
         self.subs_path = subs_path
+        self.cover_image = cover_image
+        self.id = id
 
-        if subs_path and os.path.exists(subs_path):
-            self.load_subs()
+        if subtitles:
+            if isinstance(subtitles[0], Subtitle):
+                self.subtitles = subtitles
+            else:
+                self.subtitles = [Subtitle(**sub, movie=self) for sub in self.subtitles]
         else:
-            self.subtitles = []
+            if subs_path and os.path.exists(subs_path):
+                self.load_subs()
+            else:
+                self.subtitles = []
 
     def load_subs(self):
         # noop if there's no subs file or subs are already loaded
@@ -62,7 +71,8 @@ class Movie(Base):
             "id": self.id,
             "name": self.name,
             "movie_path": self.movie_path,
-            "subs_path": self.subs_path
+            "subs_path": self.subs_path,
+            "cover_image": self.cover_image
         }
 
         if include_subs:
