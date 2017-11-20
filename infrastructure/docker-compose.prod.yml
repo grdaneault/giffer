@@ -36,7 +36,7 @@ services:
     image: rabbitmq:alpine
     container_name: rabbitmq
     environment:
-      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=1024MiB
+      - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=400MiB
   redis:
     image: redis:alpine
     container_name: redis
