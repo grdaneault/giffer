@@ -30,6 +30,8 @@ services:
     env_file:
       - env.list
       - env.secret.list
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
   rabbitmq:
@@ -37,9 +39,13 @@ services:
     container_name: rabbitmq
     environment:
       - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=400MiB
+    ports:
+      - "127.0.0.1:5672:5672"
   redis:
     image: redis:alpine
     container_name: redis
+    ports:
+      - "127.0.0.1:6793:6793"
 
   giffer:
     container_name: giffer
