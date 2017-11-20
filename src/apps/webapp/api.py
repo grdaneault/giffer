@@ -40,6 +40,14 @@ def make_api_blueprint(db, config):
             resp.status_code = 400
             return resp
 
+    @api.route("/movie/<int:movie_id>")
+    def get_movie(movie_id):
+        movie = db.session.query(Movie).get(movie_id)
+        if not movie:
+            return jsonify({"success": False, "message": "No movie %d" % movie_id}), 404
+
+        return jsonify(movie.to_dict())
+
     @api.route("/movie/<int:movie_id>", methods=["DELETE"])
     def remove_movie(movie_id):
         movie = db.session.query(Movie).get(movie_id)
@@ -57,15 +65,13 @@ def make_api_blueprint(db, config):
     def list_movies():
         return jsonify([movie.to_dict(include_subs=False) for movie in db.session.query(Movie).all()])
 
-    @api.route("/movie/<int:movie_id>")
-    def get_movie(movie_id):
-        return jsonify(db.session.query(Movie).get(movie_id).to_dict())
-
     @api.route("/movie/<int:movie_id>/art/<type>")
     def get_movie_art(movie_id, type):
         if type not in ["poster.jpg", "fanart.jpg", "landscape.jpg", "logo.png", "banner.jpg", "clearart.png", "disc.png"]:
             raise NotFound()
         movie = db.session.query(Movie).get(movie_id)
+        if not movie:
+            raise NotFound()
 
         return send_from_directory(os.path.dirname(movie.movie_path), type)
 
@@ -85,7 +91,11 @@ def make_api_blueprint(db, config):
 
     @api.route("/movie/<int:movie_id>/subtitle/<int:sub_id>", methods=["GET"])
     def get_sub(movie_id, sub_id):
-        return jsonify(sub_search.get_sub_by_id(movie_id, sub_id).to_dict(include_movie=False))
+        subs = sub_search.get_sub_by_id(movie_id, sub_id)
+        if not subs:
+            return jsonify({"success": False, "message": "No movie %d or no subs %s" % (movie_id, sub_id)}), 404
+
+        return jsonify(subs.to_dict(include_movie=False))
 
     @api.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>", methods=["GET"])
     def get_sub_range(movie_id, start_id, end_id):
@@ -98,7 +108,7 @@ def make_api_blueprint(db, config):
     @api.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/gif", methods=["GET"])
     def get_gif_range(movie_id, start_id, end_id):
         if end_id - start_id > 10:
-            return "too much!"
+            return jsonify({"success": False, "message": "Can't request more than 10 lines of a movie"}), 400
 
         task = make_gif.delay(movie_id, start_id, end_id)
         return redirect(url_for('gif_render_status', task_id=task.id))
