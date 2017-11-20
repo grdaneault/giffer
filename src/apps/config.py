@@ -5,7 +5,7 @@ class Config:
     PSQL_HOST = os.environ.get('POSTGRESQL_HOST', 'localhost')
     PSQL_PORT = os.environ.get('POSTGRESQL_PORT', '5432')
     PSQL_USER = os.environ.get('POSTGRESQL_USER', 'giffer')
-    PSQL_PASS = os.environ.get('POSTGRESQL_PASS', 'password')
+    PSQL_PASS = os.environ.get('POSTGRESQL_PASSWORD', 'password')
 
     SQLALCHEMY_DATABASE_URI = os.environ.get('PSQL_URI', 'postgresql://%s:%s@%s:%s' % (PSQL_USER, PSQL_PASS, PSQL_HOST, PSQL_PORT))
 
