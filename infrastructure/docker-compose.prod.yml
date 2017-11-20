@@ -10,8 +10,6 @@ services:
       - "xpack.security.enabled=false"
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
     networks:
       - esnet
   elasticsearch2:
@@ -29,11 +27,9 @@ services:
   postgres:
     image: postgres:alpine
     container_name: postgres
-    environment:
-      - POSTGRES_USER=giffer
-      - POSTGRES_PASSWORD=password
-    ports:
-      - 5432:5432
+    env_file:
+      - env.list
+      - env.secret.list
     volumes:
       - pgdata:/var/lib/postgresql/data
   rabbitmq:
@@ -41,13 +37,23 @@ services:
     container_name: rabbitmq
     environment:
       - RABBITMQ_VM_MEMORY_HIGH_WATERMARK=1024MiB
-    ports:
-      - 5672:5672
   redis:
     image: redis:alpine
     container_name: redis
+
+  giffer:
+    container_name: giffer
+    image: giffer:latest
+    build:
+      context: ../src/
+      dockerfile: ../src/Dockerfile
     ports:
-      - 6379:6379
+      - 8000:8000
+    env_file:
+      - env.list
+      - env.secret.list
+
+
 
 
 volumes:

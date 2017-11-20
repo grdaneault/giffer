@@ -9,13 +9,13 @@ INDEX_MOVIES = "movies"
 
 
 class SubSearch:
-    def __init__(self, es_host='localhost:9200', db=None):
-        self.es = Elasticsearch(hosts=[es_host])
+    def __init__(self, config, db=None):
+        self.es = Elasticsearch(hosts=[config.ES_HOST])
         self.db = db
 
     def index_movie(self, movie):
         """
-        Indexs a movie into ES
+        Indexes a movie into ES
         :param movie: the movie to index
         :type movie: Movie
         :return:

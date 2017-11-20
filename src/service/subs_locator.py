@@ -2,22 +2,22 @@ import os
 import shutil
 from pythonopensubtitles.opensubtitles import OpenSubtitles
 from pythonopensubtitles.utils import File
-from pythonopensubtitles.settings import Settings
 
 from service.mkv_extractor import NoEmbeddedSubsError, extract_mkv_subs
 from logging import getLogger
 
 
 class SubsLocatorService:
-    def __init__(self, username, password, user_agent=None):
-        if not username or not username.strip():
+    def __init__(self, config):
+        self.os_username = config.OS_USERNAME
+        if not self.os_username or not self.os_username.strip():
             raise ValueError("Missing username")
-        if not password or not password.strip():
+
+        self.os_password = config.OS_PASSWORD
+        if not self.os_password or not self.os_password.strip():
             raise ValueError("Missing password")
 
-        self.os_username = username
-        self.os_password = password
-        self.os = OpenSubtitles(user_agent=user_agent)
+        self.os = OpenSubtitles(user_agent=config.OS_USER_AGENT)
         self.os_logged_in = False
 
         self.log = getLogger(self.__class__.__name__)

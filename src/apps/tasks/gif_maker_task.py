@@ -1,30 +1,30 @@
 import os
 
-from moviepy.editor import *
-from moviepy.tools import extensions_dict
-from moviepy.video.tools.subtitles import SubtitlesClip
-
-from apps import celery_app as app, Config
-from apps import db
+from apps import celery_app as app
+from apps import db, Config
 from model import Movie
 from service import SubsLocatorService, SubSearch, GifUploadService
 
-extensions_dict["mkv"] = {'type': 'video', 'codec': ['libx264', 'libmpeg4', 'aac']}
-
-subs_service = SubsLocatorService(username=Config.OS_USERNAME, password=Config.OS_PASSWORD)
-sub_search = SubSearch(db=db)
+subs_service = SubsLocatorService(Config)
+sub_search = SubSearch(config=Config, db=db)
 upload_service = GifUploadService(Config)
 
 @app.task()
 def make_gif(movie_id, start_id, end_id, width=400):
     """
     Makes a gif including the selected subtitles
-    
-    :param movie_id: Movie file ID 
+
+    :param movie_id: Movie file ID
     :param start_id: Starting subtitle ID
     :param end_id: Ending subtitle ID
     :return: name of gif
     """
+
+    # bring in dependencies here so that we don't break the docker run which does not have ffmpeg/etc
+    from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
+    from moviepy.tools import extensions_dict
+    from moviepy.video.tools.subtitles import SubtitlesClip
+    extensions_dict["mkv"] = {'type': 'video', 'codec': ['libx264', 'libmpeg4', 'aac']}
 
     movie = db.session.query(Movie).get(movie_id)
     start = sub_search.get_sub_by_id(movie_id, start_id)

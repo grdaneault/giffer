@@ -2,11 +2,25 @@ import os
 
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = os.environ.get('PSQL_URL', 'postgresql://giffer:password@localhost:5432')
+    PSQL_HOST = os.environ.get('POSTGRESQL_HOST', 'localhost')
+    PSQL_PORT = os.environ.get('POSTGRESQL_PORT', '5432')
+    PSQL_USER = os.environ.get('POSTGRESQL_USER', 'giffer')
+    PSQL_PASS = os.environ.get('POSTGRESQL_PASS', 'password')
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get('PSQL_URI', 'postgresql://%s:%s@%s:%s' % (PSQL_USER, PSQL_PASS, PSQL_HOST, PSQL_PORT))
+
+    ES_HOST = os.environ.get('ES_HOST', 'localhost:9200')
+
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+
+    RMQ_HOST = os.environ.get('RMQ_HOST', 'localhost')
+    RMQ_USER = os.environ.get('RMQ_USER', 'guest')
+
     GIF_OUTPUT_DIR = '/tmp/gifs'
 
     OS_USERNAME = os.environ.get('OS_USER')
     OS_PASSWORD = os.environ.get('OS_PASS')
+    OS_USER_AGENT = os.environ.get('OS_USER_AGENT')
 
     DO_SPACES_KEY = os.environ.get('DO_SPACES_KEY')
     DO_SPACES_SECRET = os.environ.get('DO_SPACES_SECRET')
