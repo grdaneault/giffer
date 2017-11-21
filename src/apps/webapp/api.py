@@ -7,12 +7,14 @@ from apps.tasks import make_gif, load_movie
 from model import Movie
 from service import SubSearch
 
-from logging import getLogger
+from logging import getLogger, INFO
 
 log = getLogger(__name__)
+log.setLevel(INFO)
 
 
 def make_api_blueprint(db, config):
+    log.error('Creating api blueprint')
     sub_search = SubSearch(config, db=db)
 
     api = Blueprint('api', __name__)
