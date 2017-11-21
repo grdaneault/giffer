@@ -65,7 +65,7 @@ class GifCreationPage extends Component {
             return (
                 <div style={parentStyle}>
                     <h1>{movie.name}</h1>
-                    <img src={"/api/v1/movie/" + movie.id + "/art/poster.jpg"} width={200} />
+                    <img src={movie.cover_image} width={200} />
                     <div style={style}>
                         <Slider.Range
                             vertical

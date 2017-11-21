@@ -47,7 +47,7 @@ class FileUploadService:
 
         if not self.file_exists(key):
             upload_args = {
-                'ContentType': 'image/' + filetype,
+                'ContentType': 'image/' + filetype.replace(".", "").replace("jpg", "jpeg"),
                 'ACL': 'public-read'
             }
 
