@@ -21,10 +21,6 @@ class Movie(Base):
 
     def __init__(self, name, movie_path, subs_path=None, cover_image=None, subtitles=None, id=None):
         self.name = name
-
-        if not os.path.isfile(movie_path):
-            raise ValueError("Movie not found at %s" % movie_path)
-
         self.movie_path = movie_path
         self.subs_path = subs_path
         self.cover_image = cover_image
