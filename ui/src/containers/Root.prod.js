@@ -4,7 +4,6 @@ import { Provider } from 'react-redux'
 import {Route} from 'react-router-dom'
 import SearchPage from './SearchPage'
 import GifCreationPage from "./GifCreationPage";
-import DevTools from "./DevTools";
 
 const Root = ({ store }) => (
     <Provider store={store}>
@@ -16,7 +15,6 @@ const Root = ({ store }) => (
             <Route path="/gif/:movieId/:start"
                    exact={true}
                    component={GifCreationPage} />
-            <DevTools />
         </div>
     </Provider>
 );
