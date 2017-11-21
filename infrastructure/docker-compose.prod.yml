@@ -51,17 +51,35 @@ services:
     ports:
       - "127.0.0.1:6379:6379"
 
-  giffer:
-    container_name: giffer
-    image: giffer:latest
+  backend:
+    container_name: backend
+    image: giffer-backend:latest
     build:
       context: ../src/
-      dockerfile: Dockerfile
     ports:
       - 8000:8000
     env_file:
       - env.list
       - env.secret.list
+
+  frontend:
+    container_name: frontend
+    image: giffer-frontend:latest
+    build:
+      context: ../ui/
+    ports:
+      - 3000:3000
+    env_file:
+      - env.list
+      - env.secret.list
+
+  nginx:
+    container_name: nginx
+    image: giffer-nginx:latest
+    build:
+      context: nginx
+    ports:
+      - "80:80"
 
 
 
