@@ -7,10 +7,10 @@ from apps.tasks import make_gif, load_movie
 from model import Movie
 from service import SubSearch
 
-from logging import getLogger, INFO
+from logging import getLogger, DEBUG
 
 log = getLogger(__name__)
-log.setLevel(INFO)
+log.setLevel(DEBUG)
 
 
 def make_api_blueprint(db, config):
@@ -22,11 +22,11 @@ def make_api_blueprint(db, config):
     @api.route("/movie", methods=["POST"])
     def add_movie():
         data = request.get_json()
-        log.info('Loading movie %s' % data)
+        log.error('Loading movie %s' % data)
 
         task = load_movie.delay(data['movie_file'])
 
-        log.info('Task %s scheduled to load movie' % task.id)
+        log.error('Task %s scheduled to load movie' % task.id)
 
         return redirect(url_for('api.movie_load_status', task_id=task.id), code=303)
 
@@ -35,19 +35,21 @@ def make_api_blueprint(db, config):
         task = load_movie.AsyncResult(task_id)
         response = {
             'state': task.state,
-            'renderId': task_id
+            'task_id': task_id
         }
+
+        log.error("getting status for %s" % task_id)
 
         if task.state == "SUCCESS":
             if 'success' in task.result:
                 response.update(task.result)
                 return jsonify(response), 400
             else:
-                log.info('Movie loaded successfully... adding to postgres')
+                log.error('Movie loaded successfully... adding to postgres')
                 movie = Movie(**task.result)
                 db.session.add(movie)
                 db.session.commit()
-                log.info('Movie %d loaded successfully... now adding %d subtitles to elasticsearch' % (movie.id, len(movie.subtitles)))
+                log.error('Movie %d loaded successfully... now adding %d subtitles to elasticsearch' % (movie.id, len(movie.subtitles)))
                 sub_search.index_movie(movie)
                 response["movie"] = movie.to_dict(include_subs=False)
         return jsonify(response)

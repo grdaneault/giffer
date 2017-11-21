@@ -30,7 +30,7 @@ class Movie(Base):
             if isinstance(subtitles[0], Subtitle):
                 self.subtitles = subtitles
             else:
-                self.subtitles = [Subtitle(**sub, movie=self) for sub in self.subtitles]
+                self.subtitles = [Subtitle(**sub, movie=self) for sub in subtitles]
         else:
             if subs_path and os.path.exists(subs_path):
                 self.load_subs()
