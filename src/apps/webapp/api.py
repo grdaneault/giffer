@@ -7,6 +7,10 @@ from apps.tasks import make_gif, load_movie
 from model import Movie
 from service import SubSearch
 
+from logging import getLogger
+
+log = getLogger(__name__)
+
 
 def make_api_blueprint(db, config):
     sub_search = SubSearch(config, db=db)
@@ -16,8 +20,11 @@ def make_api_blueprint(db, config):
     @api.route("/movie", methods=["POST"])
     def add_movie():
         data = request.get_json()
+        log.info('Loading movie %s' % data)
 
         task = load_movie.delay(data['movie_file'])
+
+        log.info('Task %s scheduled to load movie' % task.id)
 
         return redirect(url_for('api.movie_load_status', task_id=task.id), code=303)
 
@@ -34,9 +41,11 @@ def make_api_blueprint(db, config):
                 response.update(task.result)
                 return jsonify(response), 400
             else:
+                log.info('Movie loaded successfully... adding to postgres')
                 movie = Movie(**task.result)
                 db.session.add(movie)
                 db.session.commit()
+                log.info('Movie %d loaded successfully... now adding %d subtitles to elasticsearch' % (movie.id, len(movie.subtitles)))
                 sub_search.index_movie(movie)
                 response["movie"] = movie.to_dict(include_subs=False)
         return jsonify(response)
