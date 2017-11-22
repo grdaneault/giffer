@@ -1,68 +1,53 @@
-import {SET_SUBTITLE_QUERY, SET_SUBTITLE_PAGE, REQUEST_SEARCH_RESULTS, RECEIVE_SEARCH_RESULTS} from '../actions/Search'
+import * as constants from '../constants';
+import { Map, List } from 'immutable';
 
 
-export const searchQuery = (state = '', action) => {
-    switch (action.type) {
-        case SET_SUBTITLE_QUERY:
-            return action.query;
-        default:
-            return state;
-    }
-};
 
-export const searchPage = (state = 0, action) => {
-    switch (action.type) {
-        case SET_SUBTITLE_PAGE:
-            return action.page * 20;
-        default:
-            return state;
-    }
-};
-
-
-const search = (state = {
-    isSearching: false,
-    didInvalidate: false,
-    results: [],
-    total: 0,
+const initialState = Map({
+    loading: false,
+    error: "",
+    query: "",
+    results: List(),
+    totalResults: 0,
+    page: 0,
     start: 0,
-    size: 20
-}, action) => {
+    pageSize: 20
+});
+
+const search = (state = initialState, action) => {
     switch (action.type) {
-        case SET_SUBTITLE_PAGE:
-            return {
-                ...state,
-                didInvalidate: true,
-            };
-        case REQUEST_SEARCH_RESULTS:
-            return {
-                ...state,
-                isSearching: true,
-                didInvalidate: false
-            };
-        case RECEIVE_SEARCH_RESULTS:
-            return {
-                ...state,
-                isSearching: false,
-                didInvalidate: false,
-                results: action.results,
-                total: action.totalResults
-            };
+        case constants.SET_SUBTITLE_QUERY:
+            return state.set('query', action.query);
+        case constants.SET_PAGE:
+            let start = action.page * state.get('pageSize') ;
+            return state.set('page', action.page).set('start', start);
+        case constants.SET_PAGE_SIZE:
+            return state.withMutations(s => {
+                // keep content the same as much as possible
+                // (but still align with full page if necessary)
+                let page = s.get('start') / action.pageSize;
+                let start = page * action.pageSize;
+
+                s.set('page', page);
+                s.set('pageSize', action.pageSize);
+                s.set('start', start)
+            });
+        case constants.REQUEST_SEARCH_RESULTS:
+            return state.set('loading', true).set('error', '');
+        case constants.RECEIVE_SEARCH_RESULTS:
+            return state.withMutations(s => {
+                s.set('results', action.results);
+                s.set('totalResults', action.totalResults);
+                s.set('loading', false);
+            });
+        case constants.RECEIVE_SEARCH_RESULTS_ERR:
+            return state.withMutations(s => {
+                s.set('loading', false);
+                s.set('error', action.error);
+            });
         default:
             return state;
     }
 };
 
-export const searchResultsByQuery = (state = { }, action) => {
-    switch (action.type) {
-        case REQUEST_SEARCH_RESULTS:
-        case RECEIVE_SEARCH_RESULTS:
-        case SET_SUBTITLE_PAGE:
-            return {
-                ...state,
-                [action.query]: search(state[action.query], action)
-            };
-        default:
-            return state;
-    }
-};
+export default search;

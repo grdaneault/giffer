@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSubtitleQueryPage } from '../actions/Search'
+import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSearchPage } from '../actions/Search'
 import SubtitleList from '../components/SubtitleList'
 import SearchBox from "../components/SearchBox";
 import PageSelector from "../components/PageSelector";
@@ -10,13 +10,7 @@ import PageSelector from "../components/PageSelector";
 
 class SearchPage extends Component {
     static propTypes = {
-        searchQuery: PropTypes.string.isRequired,
-        searchPage: PropTypes.number.isRequired,
-        results: PropTypes.array.isRequired,
-        totalResults: PropTypes.number.isRequired,
-        size: PropTypes.number.isRequired,
-        isSearching: PropTypes.bool.isRequired,
-        dispatch: PropTypes.func.isRequired,
+        search: PropTypes.object.isRequired,
 
         // Injected by React Router
         children: PropTypes.node,
@@ -26,24 +20,22 @@ class SearchPage extends Component {
     };
 
     componentDidMount() {
-        const { dispatch, searchQuery, searchPage, size, match } = this.props;
-        console.log("MATCH", match);
+        const { dispatch, match } = this.props;
         if (match && match.params.searchQuery) {
             dispatch(setSubtitleQuery(match.params.searchQuery));
         }
 
-        if (match && match.params.start) {
-            console.log("page", match.params.start / size)
-            dispatch(setSubtitleQueryPage(searchQuery, match.params.start / size, size));
+        if (match && match.params.page) {
+            dispatch(setSearchPage(match.params.page));
         }
-
-        dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.searchQuery !== this.props.searchQuery) {
-            const { dispatch, searchQuery, searchPage, size } = nextProps;
-            dispatch(fetchSearchResultsIfNecessary(searchQuery, searchPage * size))
+        console.log("NEXT PROPS", nextProps);
+        if (nextProps.search.get('query') !== this.props.search.get('query') || nextProps.search.get('start') !== this.props.search.get('start')) {
+            const { dispatch, search } = nextProps;
+            console.log('dispatching search for ', search.get('query'));
+            dispatch(fetchSearchResultsIfNecessary(search.get('query'), search.get('start')))
         }
     }
 
@@ -52,30 +44,29 @@ class SearchPage extends Component {
         this.props.history.push(`/search/${query}`);
     };
 
-    handlePageChange = start => {
-        const { dispatch, searchQuery, size } = this.props;
-        dispatch(setSubtitleQueryPage(searchQuery, start, size));
-        dispatch(fetchSearchResultsIfNecessary(searchQuery, start * size));
-        this.props.history.push(`/search/${searchQuery}/${start * size}`);
+    handlePageChange = page => {
+        const { dispatch, search } = this.props;
+        dispatch(setSearchPage(page));
+        this.props.history.push(`/search/${search.get('query')}/${page}`);
     };
 
 
     render() {
-        const { searchQuery, results, totalResults, size, searchPage, isSearching } = this.props;
-        const isEmpty = results.length === 0;
-        const page = searchPage / size;
-        const pages = Math.ceil(totalResults / size);
-        console.log("start", searchPage, "total", totalResults, "size", size);
+        const { search } = this.props;
+        const isEmpty = search.get('totalResults') === 0;
+        const page = search.get('page');
+        const pages = Math.ceil(search.get('totalResults') / search.get('pageSize'));
+        console.log("page", page, "of", pages);
         return (
             <div>
                 <div>
-                    <SearchBox onChange={this.handleSearchChange} value={searchQuery} />
-                    { !isSearching && <PageSelector page={page} pages={pages} onChange={this.handlePageChange}/> }
+                    <SearchBox onChange={this.handleSearchChange} value={search.get('query')} />
+                    { !search.get('loading') && <PageSelector page={page} pages={pages} onChange={this.handlePageChange}/> }
                 </div>
                 <div>
                     { isEmpty
-                        ? isSearching ? <h2>Loading...</h2> : <h2>No results...</h2>
-                        : <SubtitleList subtitles={results}/>
+                        ? search.get('loading') ? <h2>Loading...</h2> : <h2>No results... {search.get('error')}</h2>
+                        : <SubtitleList subtitles={search.get('results')}/>
                     }
                 </div>
             </div>
@@ -84,29 +75,10 @@ class SearchPage extends Component {
 }
 
 const mapStateToProps = state => {
-    const { searchQuery, searchPage, searchResultsByQuery, match } = state;
-    const {
-        isSearching,
-        results,
-        total: totalResults,
-    } = searchResultsByQuery[searchQuery] || {
-        isSearching: true,
-        results: [],
-        total: 0,
-        size: 20
-    };
-
-    const size = 20;
-
-    console.log(searchQuery, searchPage);
+    const { search } = state;
 
     return {
-        searchQuery,
-        searchPage,
-        results,
-        totalResults,
-        isSearching,
-        size
+        search
     };
 };
 

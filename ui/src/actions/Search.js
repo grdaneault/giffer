@@ -1,56 +1,56 @@
-export const SET_SUBTITLE_QUERY = 'SET_SUBTITLE_QUERY';
-export const SET_SUBTITLE_PAGE = 'SET_SUBTITLE_PAGE';
-export const REQUEST_SEARCH_RESULTS = 'REQUEST_SEARCH_RESULTS';
-export const RECEIVE_SEARCH_RESULTS = 'RECEIVE_SEARCH_RESULTS';
+import * as constants from '../constants';
+import { api } from '../api';
 
+export const setSubtitleQuery = (query) => (dispatch) => {
+    dispatch({
+        type: constants.SET_SUBTITLE_QUERY,
+        query: query
+    });
 
-export const setSubtitleQuery = (query) => ({
-    type: SET_SUBTITLE_QUERY,
-    query
-});
+    dispatch(setSearchPage(0));
+};
 
-export const setSubtitleQueryPage = (query, page) => ({
-    type: SET_SUBTITLE_PAGE,
-    query,
+export const setSearchPage = (page) => ({
+    type: constants.SET_PAGE,
     page: parseInt(page, 10)
 });
 
-export const requestSearchResults = (query, start) => ({
-    type: REQUEST_SEARCH_RESULTS,
-    query,
-    start
+export const setSearchPageSize = (pageSize) => ({
+    type: constants.SET_PAGE_SIZE,
+    pageSize: parseInt(pageSize, 10)
 });
 
-export const receiveSearchResults = (query, json) => ({
-    type: RECEIVE_SEARCH_RESULTS,
-    query,
+export const requestSearchResults = () => ({
+    type: constants.REQUEST_SEARCH_RESULTS,
+});
+
+export const receiveSearchResults = (json) => ({
+    type: constants.RECEIVE_SEARCH_RESULTS,
     results: json.matches,
     totalResults: json.total
 });
 
+export const receiveSearchResultsError = (error) => ({
+    type: constants.RECEIVE_SEARCH_RESULTS_ERR,
+    error: error
+});
+
 const fetchSearchResults = (query, start) => dispatch => {
+    console.log('fetch for', query, start);
     dispatch(requestSearchResults(query, start));
-    return fetch(`/api/v1/movie/subtitle?start=${start}&query=${query}`)
-        .then(response => response.json())
-        .then(json => dispatch(receiveSearchResults(query, json)))
+    return api.get(`/movie/subtitle?start=${start}&query=${query}`)
+        .then(response => {console.log("RRRRRRR", response); dispatch(receiveSearchResults(response.data));})
+        .catch(err => dispatch(receiveSearchResultsError(err.message)));
 };
 
-const shouldFetchSearchResults = (state, query) => {
-    const results = state.searchResultsByQuery[query];
+const shouldFetchSearchResults = (state) => {
+    console.log(state, state.get('loading'));
 
-    if (!results) {
-        return true;
-    }
-
-    if (results.isSearching) {
-        return false;
-    }
-
-    return results.didInvalidate;
+    return true; //state.get('loading');
 };
 
 export const fetchSearchResultsIfNecessary = (query, start) => (dispatch, getState) => {
-    if (shouldFetchSearchResults(getState(), query)) {
+    if (shouldFetchSearchResults(getState().search, query)) {
         return dispatch(fetchSearchResults(query, start));
     } else {
         console.log("nope.")
