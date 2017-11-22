@@ -1,3 +1,4 @@
+import _ from 'underscore';
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -19,10 +20,29 @@ class SearchPage extends Component {
 
     };
 
+    constructor(props) {
+        super(props);
+        this.state = {
+            query: ""
+        };
+        this.handleSearchChange = _.debounce(this.handleSearchChange, 200);
+    }
+
+
+    delayedHandleSearchChange(query) {
+        this.setState({
+            query: query
+        });
+        this.handleSearchChange(query);
+    }
+
     componentDidMount() {
         const { dispatch, match } = this.props;
         if (match && match.params.searchQuery) {
             dispatch(setSubtitleQuery(match.params.searchQuery));
+            this.setState({
+                query: match.params.searchQuery
+            });
         }
 
         if (match && match.params.page) {
@@ -31,11 +51,13 @@ class SearchPage extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        console.log("NEXT PROPS", nextProps);
         if (nextProps.search.get('query') !== this.props.search.get('query') || nextProps.search.get('start') !== this.props.search.get('start')) {
             const { dispatch, search } = nextProps;
-            console.log('dispatching search for ', search.get('query'));
-            dispatch(fetchSearchResultsIfNecessary(search.get('query'), search.get('start')))
+            dispatch(fetchSearchResultsIfNecessary(search.get('query'), search.get('start')));
+
+            this.setState({
+                query: nextProps.search.get('query')
+            })
         }
     }
 
@@ -56,11 +78,10 @@ class SearchPage extends Component {
         const isEmpty = search.get('totalResults') === 0;
         const page = search.get('page');
         const pages = Math.ceil(search.get('totalResults') / search.get('pageSize'));
-        console.log("page", page, "of", pages);
         return (
             <div>
                 <div>
-                    <SearchBox onChange={this.handleSearchChange} value={search.get('query')} />
+                    <SearchBox onChange={(query) => this.delayedHandleSearchChange(query)} value={this.state.query} />
                     { !search.get('loading') && <PageSelector page={page} pages={pages} onChange={this.handlePageChange}/> }
                 </div>
                 <div>
