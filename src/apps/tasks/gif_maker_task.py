@@ -34,7 +34,7 @@ def make_gif(movie_id, start_id, end_id, width=400):
     full_filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
     # we already have this gif - don't render again
-    if upload_service.file_exists(filename):
+    if upload_service.gif_exists(filename):
         return upload_service.get_url_of_gif(filename)
 
     if os.path.exists(full_filename):
