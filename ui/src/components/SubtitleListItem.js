@@ -2,21 +2,22 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {Avatar, ListItem, ListItemText} from "material-ui";
 import {Link} from "react-router-dom";
+import MovieAvatar from "./MovieAvatar";
 
-const Subtitle = ({subtitle}) => (
+const SubtitleListItem = ({subtitle}) => (
     <ListItem
         button
         component={Link}
         to={`/gif/${subtitle.movie_id}/${subtitle.sub_id}`}>
-        <Avatar src="https://giffer.nyc3.digitaloceanspaces.com/movies/10674-cover.jpg" />
+        <MovieAvatar movieId={subtitle.movie_id} />
         <ListItemText
             primary={subtitle.text}
             secondary={`${subtitle.start} to ${subtitle.end}`} />
     </ListItem>
 );
 
-Subtitle.propTypes = {
+SubtitleListItem.propTypes = {
     subtitle: PropTypes.object.isRequired
 };
 
-export default Subtitle
+export default SubtitleListItem

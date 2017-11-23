@@ -1,21 +1,23 @@
 import { Map } from 'immutable';
-import {SET_MOVIE, RECEIVE_MOVIE, REQUEST_MOVIE } from '../actions/Movie';
-
+import * as constants from '../constants';
 
 const initialState = Map({
     movieMap: Map(),
-    selectedMovieId: undefined
+    error: ""
 });
 
 const movies = (state = initialState, action) => {
     switch (action.type) {
-        case SET_MOVIE:
-            return state.set('selectedMovieId', action.movieId);
-        case REQUEST_MOVIE:
+        case constants.REQUEST_MOVIE:
             return state.setIn(['movieMap', action.movieId, 'isLoading'], true);
-        case RECEIVE_MOVIE:
-            console.log("GOT MOVIE!", action.movie);
-            return state.setIn(['movieMap', action.movieId], action.movie);
+        case constants.RECEIVE_MOVIE:
+            return state.withMutations((s) => {
+                s.setIn(['movieMap', action.movieId], Map(action.movie));
+                s.setIn(['movieMap', action.movieId, 'isLoading'], false);
+                s.set('error', '');
+            });
+        case constants.RECEIVE_MOVIE_ERR:
+            return state.set('error', action.message);
         default:
             return state;
     }

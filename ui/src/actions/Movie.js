@@ -1,33 +1,30 @@
-export const SET_MOVIE = 'SET_MOVIE';
-export const REQUEST_MOVIE = 'REQUEST_MOVIE';
-export const RECEIVE_MOVIE = 'RECEIVE_MOVIE';
-
-
-export const setMovie = (movieId) => ({
-    type: SET_MOVIE,
-    movieId
-});
+import * as constants from "../constants";
+import { api } from '../api';
 
 export const requestMovie = (movieId) => ({
-    type: REQUEST_MOVIE,
+    type: constants.REQUEST_MOVIE,
     movieId
 });
 
 export const receiveMovie = (movieId, json) => ({
-    type: RECEIVE_MOVIE,
+    type: constants.RECEIVE_MOVIE,
     movieId,
     movie: json
 });
 
+export const receiveMovieError = (error) => ({
+    type: constants.RECEIVE_MOVIE_ERR
+});
+
 const fetchMovie = (movieId) => dispatch => {
     dispatch(requestMovie(movieId));
-    return fetch(`/api/v1/movie/${movieId}`)
-        .then(response => response.json())
-        .then(json => dispatch(receiveMovie(movieId, json)))
+    return api.get(`/movie/${movieId}`)
+        .then(response => dispatch(receiveMovie(movieId, response.data)))
+        .catch(err => dispatch(receiveMovieError(err.message)));
 };
 
 const shouldFetchMovie = (state, movieId) => {
-    return true; //!state.movies.getIn(['movieMap', 'movieId', 'isLoading']);
+    return !state.movies.getIn(['movieMap', movieId, 'isLoading']);
 };
 
 export const fetchMovieIfNecessary = (movieId) => (dispatch, getState) => {

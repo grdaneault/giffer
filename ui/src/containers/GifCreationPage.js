@@ -8,7 +8,7 @@ import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
 import {setSubtitleRenderRange, fetchMovieSubtitlesIfNecessary} from "../actions/Creator";
-import {fetchMovieIfNecessary, setMovie} from "../actions/Movie";
+import {fetchMovieIfNecessary} from "../actions/Movie";
 import {triggerRender} from "../actions/Render";
 
 
@@ -38,7 +38,7 @@ class GifCreationPage extends Component {
             const movieId = parseInt(match.params.movieId, 10);
             const baseId = parseInt(match.params.start, 10);
             dispatch(fetchMovieIfNecessary(movieId));
-            dispatch(setMovie(movieId));
+            // dispatch(setMovie(movieId));
 
             dispatch(fetchMovieSubtitlesIfNecessary(movieId, Math.max(baseId - 10, 1), baseId + 10));
             dispatch(setSubtitleRenderRange(baseId, baseId));

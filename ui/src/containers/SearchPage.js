@@ -6,7 +6,7 @@ import { withRouter } from 'react-router-dom'
 import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSearchPage } from '../actions/Search'
 import PageSelector from "../components/PageSelector";
 import { CircularProgress, List, TextField} from "material-ui";
-import Subtitle from "../components/Subtitle";
+import Subtitle from "../components/SubtitleListItem";
 
 
 class SearchPage extends Component {
