@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
+import Button from 'material-ui/Button';
+
 import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
@@ -81,11 +83,11 @@ class GifCreationPage extends Component {
                             defaultValue={[startId, endId]} />
                     </div>
                     <div>
-                        <button onClick={(e) => {
+                        <Button raised onClick={() => {
                             const {movieId, startId, endId, dispatch} = this.props;
                             console.log("STARTING RENDER", movieId, startId, endId);
                             dispatch(triggerRender(movieId, startId, endId));
-                        }}>Render</button>
+                        }}>Render</Button>
                         {render.get('state') !== 'NOT STARTED' && <p>status: {render.get('state')}</p>}
                         <img style={renderStyle} src={render.get('url')} />
                     </div>

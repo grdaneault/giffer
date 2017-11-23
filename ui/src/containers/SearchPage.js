@@ -4,9 +4,9 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSearchPage } from '../actions/Search'
-import SubtitleList from '../components/SubtitleList'
-import SearchBox from "../components/SearchBox";
 import PageSelector from "../components/PageSelector";
+import { CircularProgress, List, TextField} from "material-ui";
+import Subtitle from "../components/Subtitle";
 
 
 class SearchPage extends Component {
@@ -81,13 +81,39 @@ class SearchPage extends Component {
         return (
             <div>
                 <div>
-                    <SearchBox onChange={(query) => this.delayedHandleSearchChange(query)} value={this.state.query} />
+                    <TextField
+                        id="full-width"
+                        label="Label"
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        placeholder="Placeholder"
+                        helperText="Full width!"
+                        fullWidth
+                        margin="normal"
+                        onChange={(e) => this.delayedHandleSearchChange(e.target.value)}
+                        value={this.state.query} />
                     { !search.get('loading') && <PageSelector page={page} pages={pages} onChange={this.handlePageChange}/> }
                 </div>
                 <div>
-                    { isEmpty
-                        ? search.get('loading') ? <h2>Loading...</h2> : <h2>No results... {search.get('error')}</h2>
-                        : <SubtitleList subtitles={search.get('results')}/>
+                    { isEmpty ?
+                        search.get('loading') ?
+                            <h2>
+                                Loading...
+                                <CircularProgress size={50} />
+                            </h2> :
+                            <h2>
+                                No results...
+                                {search.get('error')}
+                            </h2>
+                        :
+                        <List>
+                            {
+                                search.get('results').map((subtitle, i) =>
+                                    <Subtitle subtitle={subtitle} />
+                                )
+                            }
+                        </List>
                     }
                 </div>
             </div>
