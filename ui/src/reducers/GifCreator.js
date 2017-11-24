@@ -17,7 +17,14 @@ const initialState = Map({
 const gifCreator = (state = initialState, action) => {
     switch (action.type) {
         case constants.SET_MOVIE:
-            return state.set('movieId', action.movieId);
+            return state.merge({
+                movieId: action.movieId,
+                renderId: "",
+                renderInProgress: false,
+                renderAttempts: 0,
+                state: "NOT STARTED",
+                url: ""
+            });
         case constants.SET_SUBTITLE_RANGE:
             return state.merge({
                 startId: action.start,
