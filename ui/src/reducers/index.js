@@ -1,9 +1,8 @@
 import { combineReducers } from 'redux'
 import movies from "./Movie";
-import {renderStart, renderEnd, subtitlesByIdByMovie} from "./Creator";
+import gifCreator from "./GifCreator";
 import search from "./Search";
-import gifRender from "./GifRender";
 
-const rootReducer = combineReducers({search, movies, renderStart, renderEnd, subtitlesByIdByMovie, gifRender});
+const rootReducer = combineReducers({search, movies, gifCreator});
 
 export default rootReducer;

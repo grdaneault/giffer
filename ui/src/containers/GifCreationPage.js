@@ -7,21 +7,19 @@ import Button from 'material-ui/Button';
 import 'rc-slider/assets/index.css';
 
 import Slider from 'rc-slider';
-import {setSubtitleRenderRange, fetchMovieSubtitlesIfNecessary} from "../actions/Creator";
+import {setSubtitleRenderRange, fetchMovieSubtitlesIfNecessary, setMovie, triggerRender, updateRenderStatus} from "../actions/GifCreator";
 import {fetchMovieIfNecessary} from "../actions/Movie";
-import {triggerRender} from "../actions/Render";
+import {CircularProgress} from "material-ui";
 
 
 class GifCreationPage extends Component {
     static propTypes = {
-        movie: PropTypes.object.isRequired,
-        movieId: PropTypes.number.isRequired,
+        movie: PropTypes.object,
         subtitles: PropTypes.object.isRequired,
+        gifCreator: PropTypes.object.isRequired,
 
         startId: PropTypes.number.isRequired,
         endId: PropTypes.number.isRequired,
-
-        render: PropTypes.object.isRequired,
 
         dispatch: PropTypes.func.isRequired,
 
@@ -38,41 +36,56 @@ class GifCreationPage extends Component {
             const movieId = parseInt(match.params.movieId, 10);
             const baseId = parseInt(match.params.start, 10);
             dispatch(fetchMovieIfNecessary(movieId));
-            // dispatch(setMovie(movieId));
+            dispatch(setMovie(movieId));
 
             dispatch(fetchMovieSubtitlesIfNecessary(movieId, Math.max(baseId - 10, 1), baseId + 10));
             dispatch(setSubtitleRenderRange(baseId, baseId));
         }
     }
 
+    handleRenderClick() {
+        const {dispatch, gifCreator} = this.props;
+        console.log("Render started");
+        dispatch(triggerRender(gifCreator.get('movieId'), gifCreator.get('startId'), gifCreator.get('endId')));
+    }
+
     render() {
         const style = { float: 'left', width: 560, height: 400, marginBottom: 560, marginLeft: 50 };
         const parentStyle = { overflow: 'hidden' };
-        const { movie, movieId, dispatch, startId, endId, subtitles, render } = this.props;
-        console.log("RENDER", render);
+        const { movie, dispatch, startId, endId, subtitles, gifCreator, renderInProgress } = this.props;
+        console.log("in progress", renderInProgress, gifCreator.get('renderState'));
 
-        if (movieId && !subtitles.isLoading) {
-            const renderStyle = {visibility: render.get('url') ? 'visible': 'hidden'};
+        console.log("movie is ", movie);
+        if (!movie) {
+            return (
+                <h1>Loading... <CircularProgress /></h1>
+            )
+        }
 
-            let marks = {};
-            marks = Object.values(subtitles.subtitles).reduce((marks, subtitle) => {marks[subtitle.sub_id] = {
+        if(!gifCreator.get('subtitlesLoading')) {
+
+            const renderStyle = {visibility: gifCreator.get('url') ? 'visible': 'hidden'};
+
+            let marks = subtitles.toMap().mapEntries(([key, val]) => [val.get('sub_id'), {
                 style: {
                     width: '500px',
                     textAlign: 'left'
                 },
-                label: <span>{subtitle.text}</span>
-            }; return marks}, marks);
+                label: <span>{val.get('text')}</span>
+            }]).toJS();
 
+            console.log(gifCreator.getIn(['subtitles', 0, 'sub_id']), "to", gifCreator.getIn(['subtitles', -1, 'sub_id']));
+            console.log(movie);
             // const marks = {0: "thing", 50: "other", 616: "stuff"};
             return (
                 <div style={parentStyle}>
-                    <h1>{movie.name}</h1>
-                    <img src={movie.cover_image} width={200} />
+                    <h1>{movie.get('name')}</h1>
+                    <img src={movie.get('cover_image')} width={200} />
                     <div style={style}>
                         <Slider.Range
                             vertical
-                            min={subtitles.minId}
-                            max={subtitles.maxId}
+                            min={gifCreator.getIn(['subtitles', 0, 'sub_id'])}
+                            max={gifCreator.getIn(['subtitles', -1, 'sub_id'])}
                             marks={marks}
                             step={null}
                             onChange={range => {
@@ -83,13 +96,12 @@ class GifCreationPage extends Component {
                             defaultValue={[startId, endId]} />
                     </div>
                     <div>
-                        <Button raised onClick={() => {
-                            const {movieId, startId, endId, dispatch} = this.props;
-                            console.log("STARTING RENDER", movieId, startId, endId);
-                            dispatch(triggerRender(movieId, startId, endId));
-                        }}>Render</Button>
-                        {render.get('state') !== 'NOT STARTED' && <p>status: {render.get('state')}</p>}
-                        <img style={renderStyle} src={render.get('url')} />
+                        <Button
+                            raised
+                            disabled={renderInProgress}
+                            onClick={() => this.handleRenderClick()}>Render</Button>
+                        <p>status: {gifCreator.get('renderState')}</p>
+                        <img style={renderStyle} src={gifCreator.get('url')} />
                     </div>
                 </div>
             )
@@ -102,15 +114,15 @@ class GifCreationPage extends Component {
 }
 
 const mapStateToProps = state => {
-    const { renderStart, renderEnd, movies, gifRender, subtitlesByIdByMovie } = state;
+    const { movies, gifCreator } = state;
 
     return {
-        movie: movies.getIn(['movieMap', movies.get('selectedMovieId')]),
-        movieId: movies.get('selectedMovieId'),
-        subtitles: subtitlesByIdByMovie[movies.get('selectedMovieId')],
-        startId: renderStart,
-        endId: renderEnd,
-        render: gifRender
+        movie: movies.getIn(['movieMap', gifCreator.get('movieId')]),
+        gifCreator: gifCreator,
+        subtitles: gifCreator.get('subtitles'),
+        startId: gifCreator.get('startId'),
+        endId: gifCreator.get('endId'),
+        renderInProgress: !(["SUCCESS", "FAILURE", "NOT STARTED"].includes(gifCreator.get('renderState'))) && gifCreator.get('renderId') !== ''
     };
 };
 
