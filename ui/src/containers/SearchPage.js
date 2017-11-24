@@ -87,7 +87,7 @@ class SearchPage extends Component {
                         InputLabelProps={{
                             shrink: true,
                         }}
-                        placeholder="Placeholder"
+                        placeholder="I've got the same combination on my luggage"
                         helperText="Search for your favorite movie quotes!"
                         fullWidth
                         margin="normal"
