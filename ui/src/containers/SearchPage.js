@@ -83,12 +83,12 @@ class SearchPage extends Component {
                 <div>
                     <TextField
                         id="full-width"
-                        label="Label"
+                        label="Search"
                         InputLabelProps={{
                             shrink: true,
                         }}
                         placeholder="Placeholder"
-                        helperText="Full width!"
+                        helperText="Search for your favorite movie quotes!"
                         fullWidth
                         margin="normal"
                         onChange={(e) => this.delayedHandleSearchChange(e.target.value)}

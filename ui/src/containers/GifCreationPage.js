@@ -98,10 +98,19 @@ class GifCreationPage extends Component {
                     <div>
                         <Button
                             raised
+                            color="primary"
                             disabled={renderInProgress}
-                            onClick={() => this.handleRenderClick()}>Render</Button>
-                        <p>status: {gifCreator.get('renderState')}</p>
-                        <img style={renderStyle} src={gifCreator.get('url')} />
+                            onClick={() => this.handleRenderClick()}>Render {renderInProgress && <CircularProgress size={24} style={ {
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            marginTop: -12,
+                            marginLeft: -12,
+                        }} />}</Button>
+                        {/*<p>status: {gifCreator.get('renderState')}</p>*/}
+                        <div>
+                            <img style={renderStyle} src={gifCreator.get('url')} />
+                        </div>
                     </div>
                 </div>
             )
