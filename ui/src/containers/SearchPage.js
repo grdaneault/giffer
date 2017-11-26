@@ -110,7 +110,7 @@ class SearchPage extends Component {
                         <List>
                             {
                                 search.get('results').map((subtitle, i) =>
-                                    <Subtitle subtitle={subtitle} />
+                                    <Subtitle subtitle={subtitle} key={i} />
                                 )
                             }
                         </List>

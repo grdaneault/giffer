@@ -18,22 +18,22 @@ services:
       - 9200:9200
     networks:
       - esnet
-  elasticsearch2:
-    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.4
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
-      - "xpack.security.enabled=false"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata2:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+#  elasticsearch2:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.4
+#    environment:
+#      - cluster.name=docker-cluster
+#      - bootstrap.memory_lock=true
+#      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+#      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
+#      - "xpack.security.enabled=false"
+#    ulimits:
+#      memlock:
+#        soft: -1
+#        hard: -1
+#    volumes:
+#      - esdata2:/usr/share/elasticsearch/data
+#    networks:
+#      - esnet
   postgres:
     image: postgres:alpine
     container_name: postgres
@@ -59,6 +59,8 @@ services:
   localstack:
     image: localstack/localstack
     container_name: localstack
+    ports:
+      - "4572:4572"
 
 volumes:
   esdata1:

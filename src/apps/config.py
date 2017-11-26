@@ -26,6 +26,8 @@ class Config:
     DO_SPACES_SECRET = os.environ.get('DO_SPACES_SECRET')
     DO_SPACES_BUCKET = os.environ.get('DO_SPACES_BUCKET', 'giffer')
     DO_SPACES_REGION = os.environ.get('DO_SPACES_REGION', 'nyc3')
+    DO_SPACES_ENDPOINT = os.environ.get('DO_SPACES_ENDPOINT', 'https://%s.digitaloceanspaces.com' % DO_SPACES_REGION)
+    DO_SPACES_PUBLIC_URL = os.environ.get('DO_SPACES_PUBLIC_URL', 'http://localhost:4572/giffer')
 
     DO_GIF_DIR = os.environ.get('DO_GIF_DIR', 'gifs/')
     DO_MOVIE_DIR = os.environ.get('DO_MOVIE_DIR', 'movies/')

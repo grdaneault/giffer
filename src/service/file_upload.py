@@ -16,10 +16,10 @@ class FileUploadService:
         session = boto3.session.Session()
         self.client = session.client('s3',
                                      region_name=config.DO_SPACES_REGION,
-                                     endpoint_url='https://%s.digitaloceanspaces.com' % config.DO_SPACES_REGION,
+                                     endpoint_url=config.DO_SPACES_ENDPOINT,
                                      aws_access_key_id=config.DO_SPACES_KEY,
                                      aws_secret_access_key=config.DO_SPACES_SECRET)
-        self.base_url = 'https://%s.%s.digitaloceanspaces.com' % (config.DO_SPACES_BUCKET, config.DO_SPACES_REGION)
+        self.base_url = config.DO_SPACES_PUBLIC_URL or 'https://%s.%s.digitaloceanspaces.com' % (config.DO_SPACES_BUCKET, config.DO_SPACES_REGION)
         self.bucket = config.DO_SPACES_BUCKET
         self.gif_dir = config.DO_GIF_DIR
         self.movie_dir = config.DO_MOVIE_DIR
