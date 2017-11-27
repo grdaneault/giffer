@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
-import {SearchWeb} from 'mdi-material-ui';
+import {Magnify} from 'mdi-material-ui';
 import {fade} from 'material-ui/styles/colorManipulator';
 import {withStyles} from 'material-ui/styles';
 import _ from 'underscore';
@@ -115,7 +115,7 @@ class AppSearch extends Component {
         return (
             <div className={classes.wrapper}>
                 <div className={classes.search}>
-                    <SearchWeb/>
+                    <Magnify />
                 </div>
                 <input
                     id="quote-search-input"

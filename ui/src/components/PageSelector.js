@@ -1,8 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {MenuItem, FormControl, InputLabel, Input, Select} from 'material-ui';
+import classNames from 'classnames';
+import { withStyles } from 'material-ui/styles';
+import Typography from 'material-ui/Typography';
 
-const PageSelector = ({ totalResults, pageSize, pages, page, onChange }) => {
+const styles = theme => ({
+    paginationContainer: {
+        padding: theme.spacing.unit * 2
+    },
+    paginationInfo: {
+        display: 'inline-block',
+        marginRight: theme.spacing.unit
+    },
+    pageSelector: {
+        width: '100px',
+    },
+});
+
+const PageSelector = ({ totalResults, pageSize, pages, page, onChange, classes }) => {
 
     const options = [];
     for (let i = 0; i < pages; i++) {
@@ -13,11 +29,11 @@ const PageSelector = ({ totalResults, pageSize, pages, page, onChange }) => {
     const to = Math.min(totalResults, (page + 1) * pageSize);
 
     return (
-    <span>
-        <span>
+    <div className={classNames(classes.paginationContainer)}>
+        <Typography type="subheading" className={classNames(classes.paginationInfo)}>
             Viewing results {from} to {to} of {totalResults}
-        </span>
-        <FormControl>
+        </Typography>
+        <FormControl className={classNames(classes.pageSelector)}>
           <InputLabel htmlFor="age-simple">Jump to page</InputLabel>
           <Select
               value={page}
@@ -27,10 +43,11 @@ const PageSelector = ({ totalResults, pageSize, pages, page, onChange }) => {
               {options}
           </Select>
         </FormControl>
-  </span>
+  </div>
 )};
 
 PageSelector.propTypes = {
+    classes: PropTypes.object.isRequired,
     totalResults: PropTypes.number.isRequired,
     pageSize: PropTypes.number.isRequred,
     page: PropTypes.number.isRequired,
@@ -38,4 +55,4 @@ PageSelector.propTypes = {
     onChange: PropTypes.func.isRequired
 };
 
-export default PageSelector;
+export default withStyles(styles)(PageSelector);
