@@ -11,7 +11,7 @@ const SubtitleListItem = ({subtitle}) => (
         to={`/gif/${subtitle.movie_id}/${subtitle.sub_id}`}>
         <MovieAvatar movieId={subtitle.movie_id} />
         <ListItemText
-            primary={subtitle.text}
+            primary={subtitle.text.replace("\n", " / ")}
             secondary={`${subtitle.start} to ${subtitle.end}`} />
     </ListItem>
 );

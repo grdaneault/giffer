@@ -8,7 +8,7 @@ import GifCreationPage from "./GifCreationPage";
 const Root = ({ store }) => (
     <Provider store={store}>
         <div>
-            <Route pathh="/" exact render={() => (<Redirect to="/search/" />)} />
+            <Route path="/" exact render={() => (<Redirect to="/search/" />)} />
             <Route path="/search/:searchQuery?/:start?"
                    exact={true}
                    component={SearchPage} />

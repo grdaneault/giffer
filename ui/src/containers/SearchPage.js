@@ -5,9 +5,29 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { fetchSearchResultsIfNecessary, setSubtitleQuery, setSearchPage } from '../actions/Search'
 import PageSelector from "../components/PageSelector";
-import { CircularProgress, List, TextField} from "material-ui";
+import { CircularProgress, List} from "material-ui";
 import Subtitle from "../components/SubtitleListItem";
 
+
+import { withStyles } from 'material-ui/styles';
+import AppBar from 'material-ui/AppBar';
+import Toolbar from 'material-ui/Toolbar';
+import Typography from 'material-ui/Typography';
+import AppSearch from "../components/AppSearch";
+
+const styles = theme => ({
+    root: {
+        marginTop: theme.spacing.unit * 3,
+        width: '100%',
+    },
+    flex: {
+        flex: 1,
+    },
+    menuButton: {
+        marginLeft: -12,
+        marginRight: 20,
+    },
+});
 
 class SearchPage extends Component {
     static propTypes = {
@@ -25,16 +45,8 @@ class SearchPage extends Component {
         this.state = {
             query: ""
         };
-        this.handleSearchChange = _.debounce(this.handleSearchChange, 200);
     }
 
-
-    delayedHandleSearchChange(query) {
-        this.setState({
-            query: query
-        });
-        this.handleSearchChange(query);
-    }
 
     componentDidMount() {
         const { dispatch, match } = this.props;
@@ -51,20 +63,18 @@ class SearchPage extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.search.get('query') !== this.props.search.get('query') || nextProps.search.get('start') !== this.props.search.get('start')) {
+        const nextQuery = nextProps.search.get('query');
+
+        if (nextQuery !== this.props.search.get('query') || nextProps.search.get('start') !== this.props.search.get('start')) {
             const { dispatch, search } = nextProps;
-            dispatch(fetchSearchResultsIfNecessary(search.get('query'), search.get('start')));
+            dispatch(fetchSearchResultsIfNecessary(nextQuery, search.get('start')));
 
             this.setState({
-                query: nextProps.search.get('query')
-            })
+                query: nextQuery
+            });
+            this.props.history.push(`/search/${nextQuery}`);
         }
     }
-
-    handleSearchChange = query => {
-        this.props.dispatch(setSubtitleQuery(query));
-        this.props.history.push(`/search/${query}`);
-    };
 
     handlePageChange = page => {
         const { dispatch, search } = this.props;
@@ -74,43 +84,50 @@ class SearchPage extends Component {
 
 
     render() {
-        const { search } = this.props;
+        const { search, classes } = this.props;
         const isEmpty = search.get('totalResults') === 0;
         const page = search.get('page');
-        const pages = Math.ceil(search.get('totalResults') / search.get('pageSize'));
+        const totalResults = search.get('totalResults');
+        const pageSize = search.get('pageSize');
+        const pages = Math.ceil(totalResults / pageSize);
+
         return (
             <div>
+                <AppBar position="static">
+                    <Toolbar>
+                        <Typography type="title" color="inherit" className={classes.flex}>
+                            Giffer
+                        </Typography>
+                        <AppSearch />
+                    </Toolbar>
+                </AppBar>
                 <div>
-                    <TextField
-                        id="full-width"
-                        label="Search"
-                        InputLabelProps={{
-                            shrink: true,
-                        }}
-                        placeholder="I've got the same combination on my luggage"
-                        helperText="Search for your favorite movie quotes!"
-                        fullWidth
-                        margin="normal"
-                        onChange={(e) => this.delayedHandleSearchChange(e.target.value)}
-                        value={this.state.query} />
-                    { !search.get('loading') && <PageSelector page={page} pages={pages} onChange={this.handlePageChange}/> }
+                    { !search.get('loading') && totalResults > 0 && <PageSelector
+                        totalResults={totalResults}
+                        pageSize={pageSize}
+                        page={page}
+                        pages={pages}
+                        onChange={this.handlePageChange}/> }
                 </div>
                 <div>
                     { isEmpty ?
                         search.get('loading') ?
                             <h2>
-                                Loading...
+                                <Typography type="title" color="inherit" className={classes.flex}>
+                                    Loading...
+                                </Typography>
                                 <CircularProgress size={50} />
                             </h2> :
                             <h2>
-                                No results...
-                                {search.get('error')}
+                                <Typography type="title" color="inherit" className={classes.flex}>
+                                    No Results... {search.get('error')}
+                                </Typography>
                             </h2>
                         :
                         <List>
                             {
                                 search.get('results').map((subtitle, i) =>
-                                    <Subtitle subtitle={subtitle} />
+                                    <Subtitle subtitle={subtitle} key={i} />
                                 )
                             }
                         </List>
@@ -129,4 +146,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default withRouter(connect(mapStateToProps)(SearchPage));
+export default withStyles(styles)(withRouter(connect(mapStateToProps)(SearchPage)));

@@ -24,6 +24,9 @@ def make_api_blueprint(db, config):
         data = request.get_json()
         log.error('Loading movie %s' % data)
 
+        if "movie_file" not in data:
+            return jsonify({"success": False, "message": "movie_file is required"}), 400
+
         task = load_movie.delay(data['movie_file'])
 
         log.error('Task %s scheduled to load movie' % task.id)
@@ -148,7 +151,7 @@ def make_api_blueprint(db, config):
         }
 
         if task.state == "SUCCESS":
-            response["url"] = task.result if task.result.startswith("https://") else url_for('api.gif', gif_file=task.result)
+            response["url"] = task.result if task.result.startswith("http") else url_for('api.gif', gif_file=task.result)
         return jsonify(response)
 
     @api.route("/gif/<gif_file>")

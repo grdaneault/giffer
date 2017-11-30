@@ -71,7 +71,7 @@ class GifCreationPage extends Component {
                     width: '500px',
                     textAlign: 'left'
                 },
-                label: <span>{val.get('text')}</span>
+                label: <span>{val.get('text').replace("\n", " / ")}</span>
             }]).toJS();
 
             console.log(gifCreator.getIn(['subtitles', 0, 'sub_id']), "to", gifCreator.getIn(['subtitles', -1, 'sub_id']));
