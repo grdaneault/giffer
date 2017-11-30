@@ -10,7 +10,7 @@ sub_search = SubSearch(config=Config, db=db)
 upload_service = FileUploadService(Config)
 
 @app.task()
-def make_gif(movie_id, start_id, end_id, width=400):
+def make_gif(movie_id, start_id, end_id, width=400, file_type="gif"):
     """
     Makes a gif including the selected subtitles
 
@@ -30,7 +30,7 @@ def make_gif(movie_id, start_id, end_id, width=400):
     start = sub_search.get_sub_by_id(movie_id, start_id)
     end = sub_search.get_sub_by_id(movie_id, end_id)
 
-    filename = "%d_%d-%d_%d.gif" % (movie.id, start.sub_id, end.sub_id, width)
+    filename = "%d_%d-%d_%d.%s" % (movie.id, start.sub_id, end.sub_id, width, file_type)
     full_filename = os.path.join(app.conf['GIF_OUTPUT_DIR'], filename)
 
     # we already have this gif - don't render again
@@ -38,7 +38,10 @@ def make_gif(movie_id, start_id, end_id, width=400):
         return upload_service.get_url_of_gif(filename)
 
     if os.path.exists(full_filename):
-        return upload_service.upload_gif(full_filename)
+        if file_type == "gif":
+            return upload_service.upload_gif(full_filename)
+        else:
+            return upload_service.upload_mp4(full_filename)
 
     clip = VideoFileClip(movie.movie_path)
     font_size = clip.h // 10  # Scale the font size to an appropriate size based on the dimensions of the movie
@@ -60,6 +63,9 @@ def make_gif(movie_id, start_id, end_id, width=400):
     final = CompositeVideoClip([cropped_vid, cropped_sub])
     final = final.resize(width=width)
 
-    final.write_gif(full_filename, fps=15)
-
-    return upload_service.upload_gif(full_filename)
+    if file_type == "gif":
+        final.write_gif(full_filename, fps=15)
+        return upload_service.upload_gif(full_filename)
+    else:
+        final.write_videofile(full_filename, fps=15, audio=False)
+        upload_service.upload_mp4(full_filename)

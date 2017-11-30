@@ -33,6 +33,15 @@ class FileUploadService:
         self.client.upload_file(filename, self.bucket, self.gif_dir + key, ExtraArgs=upload_args)
         return self.get_url_of_gif(key)
 
+    def upload_mp4(self, filename):
+        key = os.path.basename(filename)
+        upload_args = {
+            'ContentType': 'video/mp4',
+            'ACL': 'public-read'
+        }
+        self.client.upload_file(filename, self.bucket, self.gif_dir + key, ExtraArgs=upload_args)
+        return self.get_url_of_gif(key)
+
     def upload_cover(self, movie_name, filename):
 
         tmdb = os.path.join(os.path.dirname(filename), 'tmdb.url')

@@ -115,6 +115,18 @@ def make_api_blueprint(db, config):
     def get_sub_range(movie_id, start_id, end_id):
         return jsonify([sub.to_dict(include_movie=False) for sub in sub_search.get_sub_by_range(movie_id, start_id, end_id)])
 
+    @api.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/mp4", methods=["GET"])
+    def get_mp4(movie_id, sub_id):
+        return get_mp4_range(movie_id, sub_id, sub_id)
+
+    @api.route("/movie/<int:movie_id>/subtitle/<int:start_id>:<int:end_id>/mp4", methods=["GET"])
+    def get_mp4_range(movie_id, start_id, end_id):
+        if end_id - start_id > 10:
+            return jsonify({"success": False, "message": "Can't request more than 10 lines of a movie"}), 400
+
+        task = make_gif.delay(movie_id, start_id, end_id, type="mp4")
+        return redirect(url_for('api.gif_render_status', task_id=task.id))
+
     @api.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
     def get_gif(movie_id, sub_id):
         return get_gif_range(movie_id, sub_id, sub_id)
