@@ -35,13 +35,16 @@ def make_gif(movie_id, start_id, end_id, width=400, file_type="gif"):
 
     # we already have this gif - don't render again
     if upload_service.gif_exists(filename):
-        return upload_service.get_url_of_gif(filename)
+        path = upload_service.get_url_of_gif(filename)
+        print("File exists, returning existing path: %s" % path)
 
     if os.path.exists(full_filename):
         if file_type == "gif":
-            return upload_service.upload_gif(full_filename)
+            path = upload_service.upload_gif(full_filename)
         else:
-            return upload_service.upload_mp4(full_filename)
+            path = upload_service.upload_mp4(full_filename)
+        print("Uploaded existing file to %s" % path)
+        return path
 
     clip = VideoFileClip(movie.movie_path)
     font_size = clip.h // 10  # Scale the font size to an appropriate size based on the dimensions of the movie
@@ -65,7 +68,10 @@ def make_gif(movie_id, start_id, end_id, width=400, file_type="gif"):
 
     if file_type == "gif":
         final.write_gif(full_filename, fps=15)
-        return upload_service.upload_gif(full_filename)
+        path = upload_service.upload_gif(full_filename)
     else:
         final.write_videofile(full_filename, fps=15, audio=False)
-        upload_service.upload_mp4(full_filename)
+        path = upload_service.upload_mp4(full_filename)
+
+    print("Uploaded new render to %s" % path)
+    return path

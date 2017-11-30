@@ -127,7 +127,7 @@ def make_api_blueprint(db, config):
         if end_id - start_id > 10:
             return jsonify({"success": False, "message": "Can't request more than 10 lines of a movie"}), 400
 
-        task = make_gif.delay(movie_id, start_id, end_id, type="mp4")
+        task = make_gif.delay(movie_id, start_id, end_id, file_type="mp4")
         return redirect(url_for('api.gif_render_status', task_id=task.id))
 
     @api.route("/movie/<int:movie_id>/subtitle/<int:sub_id>/gif", methods=["GET"])
