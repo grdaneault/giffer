@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {Magnify} from 'mdi-material-ui';
 import {fade} from 'material-ui/styles/colorManipulator';
 import {withStyles} from 'material-ui/styles';
+import { withRouter } from 'react-router-dom'
 import _ from 'underscore';
 import {setSubtitleQuery} from "../actions/Search";
 import {connect} from "react-redux";
@@ -87,7 +88,7 @@ const styles = theme => ({
     },
 });
 
-class AppSearch extends Component {
+class SubtitleSearchBox extends Component {
 
     constructor(props) {
         super(props);
@@ -106,6 +107,7 @@ class AppSearch extends Component {
     };
 
     handleSearchChange = query => {
+        this.props.history.push(`/search/${query}`);
         this.props.dispatch(setSubtitleQuery(query));
     };
 
@@ -128,10 +130,10 @@ class AppSearch extends Component {
     }
 }
 
-AppSearch.propTypes = {
+SubtitleSearchBox.propTypes = {
     dispatch: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
 };
 
 
-export default withStyles(styles)(connect()(AppSearch));
+export default withStyles(styles)(withRouter(connect()(SubtitleSearchBox)));

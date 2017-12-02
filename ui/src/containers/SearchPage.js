@@ -72,7 +72,6 @@ class SearchPage extends Component {
             this.setState({
                 query: nextQuery
             });
-            this.props.history.push(`/search/${nextQuery}`);
         }
     }
 
@@ -93,14 +92,6 @@ class SearchPage extends Component {
 
         return (
             <div>
-                <AppBar position="static">
-                    <Toolbar>
-                        <Typography type="title" color="inherit" className={classes.flex}>
-                            Giffer
-                        </Typography>
-                        <AppSearch />
-                    </Toolbar>
-                </AppBar>
                 <div>
                     { !search.get('loading') && totalResults > 0 && <PageSelector
                         totalResults={totalResults}
