@@ -37,6 +37,7 @@ def make_gif(movie_id, start_id, end_id, width=400, file_type="gif"):
     if upload_service.gif_exists(filename):
         path = upload_service.get_url_of_gif(filename)
         print("File exists, returning existing path: %s" % path)
+        return path
 
     if os.path.exists(full_filename):
         if file_type == "gif":
