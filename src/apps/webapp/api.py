@@ -1,11 +1,12 @@
 import os
 
+import re
 from flask import request, jsonify, url_for, send_from_directory, redirect, Blueprint
 from werkzeug.exceptions import NotFound
 
 from apps.tasks import make_gif, load_movie
 from model import Movie
-from service import SubSearch
+from service import SubSearch, FileUploadService
 
 from logging import getLogger, DEBUG
 
@@ -16,6 +17,7 @@ log.setLevel(DEBUG)
 def make_api_blueprint(db, config):
     log.error('Creating api blueprint')
     sub_search = SubSearch(config, db=db)
+    file_service = FileUploadService(config)
 
     api = Blueprint('api', __name__)
 
@@ -157,5 +159,29 @@ def make_api_blueprint(db, config):
     @api.route("/gif/<gif_file>")
     def gif(gif_file):
         return send_from_directory(config.GIF_OUTPUT_DIR, gif_file)
+
+    @api.route("/gif")
+    def list_gifs():
+        files = file_service.list_gifs()
+        movies = {}
+        pattern = re.compile(r"gifs/(\d+)_(\d+)-(\d+)_(\d)")
+        ret = []
+        for file in files:
+            match = pattern.match(file)
+            movie_id = int(match.group(1))
+            start_id = int(match.group(2))
+            end_id = int(match.group(3))
+            size = int(match.group(4))
+            if movie_id not in movies:
+                movies[movie_id] = db.session.query(Movie).get(movie_id)
+            ret.append({
+                "movie": movies.get(movie_id).to_dict(include_subs=False),
+                "start_id": start_id,
+                "end_id": end_id,
+                "size": size,
+                "file": file_service.get_url_of_gif(file)
+            })
+
+        return jsonify(ret)
 
     return api

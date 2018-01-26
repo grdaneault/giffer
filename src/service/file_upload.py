@@ -19,6 +19,7 @@ class FileUploadService:
                                      endpoint_url=config.DO_SPACES_ENDPOINT,
                                      aws_access_key_id=config.DO_SPACES_KEY,
                                      aws_secret_access_key=config.DO_SPACES_SECRET)
+
         self.base_url = config.DO_SPACES_PUBLIC_URL or 'https://%s.%s.digitaloceanspaces.com' % (config.DO_SPACES_BUCKET, config.DO_SPACES_REGION)
         self.bucket = config.DO_SPACES_BUCKET
         self.gif_dir = config.DO_GIF_DIR
@@ -78,3 +79,7 @@ class FileUploadService:
 
     def get_url_of_gif(self, key):
         return '%s/%s%s' % (self.base_url, self.gif_dir, key)
+
+    def list_gifs(self):
+        objects = self.client.list_objects(Bucket=self.bucket, Prefix="gifs/")
+        return [obj["Key"] for obj in objects["Contents"]]
